@@ -1,6 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
-  <circle cx="50" cy="50" r="48" fill="#E8F5E9" stroke="#2D6A4F" stroke-width="4"/>
-  <path d="M50 25 C40 25 32 33 32 43 C32 58 50 75 50 75 C50 75 68 58 68 43 C68 33 60 25 50 25 Z" fill="#2D6A4F"/>
-  <circle cx="50" cy="42" r="8" fill="#FBF9F5"/>
-  <path d="M28 72 C35 66 42 66 50 68 C58 66 65 66 72 72" stroke="#52B788" stroke-width="4" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" fill="none">
+  <!-- Rounded App Icon Background -->
+  <rect width="192" height="192" rx="42" fill="#2D6A4F"/>
+  <!-- Reassuring warm inner circle -->
+  <circle cx="96" cy="96" r="72" fill="#E8F5E9" fill-opacity="0.18"/>
+  <!-- Two hands / heart embracing symbol of 'Koode' (Together/With you) -->
+  <path d="M96 52 C84 38 60 40 50 56 C38 76 56 104 96 138 C136 104 154 76 142 56 C132 40 108 38 96 52 Z" fill="#52B788"/>
+  <circle cx="96" cy="78" r="14" fill="#FFFFFF"/>
+  <!-- Malayalam initial കൂ / English K warm accent curve -->
+  <path d="M56 148 C76 138 116 138 136 148" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/>
 </svg>

@@ -48,7 +48,7 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
   };
 
   const t = (key: keyof typeof translations.en): string => {
-    const dict = translations[settings.language] || translations.en;
+    const dict = (translations[settings.language] || translations.en) as Partial<Record<keyof typeof translations.en, string>>;
     return dict[key] || translations.en[key] || String(key);
   };
 

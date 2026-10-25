@@ -1,8 +1,8 @@
 import { Reminder, Contact, UserSettings } from '../types';
 
-const SETTINGS_KEY = 'sahaaya_settings';
-const REMINDERS_KEY = 'sahaaya_reminders';
-const CONTACTS_KEY = 'sahaaya_contacts';
+const SETTINGS_KEY = 'koode_settings';
+const REMINDERS_KEY = 'koode_reminders';
+const CONTACTS_KEY = 'koode_contacts';
 
 const DEFAULT_SETTINGS: UserSettings = {
   language: 'en',
@@ -13,14 +13,15 @@ const DEFAULT_SETTINGS: UserSettings = {
   completedOnboarding: false,
 };
 
-// Default initial contacts (sample family contacts)
+// Default initial trusted family contacts
 const INITIAL_CONTACTS: Contact[] = [
   {
     id: 'contact-default-1',
     name: 'Lakshmi',
     relationship: 'Daughter / മകൾ',
     phone: '9847000001',
-    notes: 'Available on WhatsApp and phone'
+    notes: 'Available on Phone & WhatsApp',
+    isPrimary: true,
   }
 ];
 
@@ -49,7 +50,6 @@ export const storage = {
       const data = localStorage.getItem(REMINDERS_KEY);
       if (!data) return [];
       const list: Reminder[] = JSON.parse(data);
-      // Sort upcoming / chronological by date + time
       return list.sort((a, b) => {
         const timeA = `${a.date} ${a.time}`;
         const timeB = `${b.date} ${b.time}`;
@@ -95,6 +95,11 @@ export const storage = {
     const reminder = reminders.find(r => r.id === id);
     if (reminder) {
       reminder.completed = !reminder.completed;
+      if (reminder.completed) {
+        reminder.completedAt = Date.now();
+      } else {
+        delete reminder.completedAt;
+      }
       localStorage.setItem(REMINDERS_KEY, JSON.stringify(reminders));
       return reminder;
     }
@@ -120,6 +125,7 @@ export const storage = {
     const newContact: Contact = {
       ...contact,
       id: 'contact-' + Date.now(),
+      isPrimary: contacts.length === 0,
     };
     contacts.push(newContact);
     localStorage.setItem(CONTACTS_KEY, JSON.stringify(contacts));
@@ -143,7 +149,8 @@ export const storage = {
   // Export & Reset
   exportAllData(): string {
     const exportData = {
-      app: 'Sahaaya AI',
+      app: 'Koode AI',
+      tagline: 'Always by your side / എന്നും നിങ്ങളുടെ കൂടെ',
       exportedAt: new Date().toISOString(),
       settings: this.getSettings(),
       reminders: this.getReminders(),

@@ -3,10 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/logo.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="apple-touch-icon" href="/logo.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
     <meta name="theme-color" content="#2D6A4F" />
-    <meta name="description" content="Sahaaya AI — A Malayalam-friendly, voice-first companion helping older adults live more independently." />
-    <title>Sahaaya AI — A little help, a more independent life</title>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Koode AI" />
+    <meta name="application-name" content="Koode AI" />
+    <meta name="format-detection" content="telephone=yes" />
+    <meta name="description" content="Koode AI (കൂടെ AI) — A voice-first, Malayalam-friendly companion for older adults. Daily reminders, confusing message explanations, and one-tap family calls." />
+    <title>Koode AI — Always By Your Side</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manjari:wght@400;700&family=Noto+Sans+Malayalam:wght@400;600;700&display=swap" rel="stylesheet">
@@ -14,5 +21,15 @@
   <body class="bg-sahaaya-bg text-sahaaya-text font-sans antialiased min-h-screen selection:bg-sahaaya-accent selection:text-white">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Register PWA Service Worker
+      if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch((err) => {
+            console.log('PWA ServiceWorker registration failed:', err);
+          });
+        });
+      }
+    </script>
   </body>
 </html>

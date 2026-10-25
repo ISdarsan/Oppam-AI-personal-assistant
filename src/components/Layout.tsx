@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Sparkles, Globe, Type, CheckCircle, BellRing, X } from 'lucide-react';
 import { useLanguage } from '../i18n/LanguageContext';
+import { supportedLanguages } from '../i18n/translations';
 import { Navigation, PageView } from './Navigation';
 import { api } from '../services/api';
 import { storage } from '../services/storage';
@@ -58,7 +59,9 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentPage, onNavigat
   }, [activeAlert]);
 
   const toggleLanguage = () => {
-    setLanguage(language === 'en' ? 'ml' : 'en');
+    const currentIndex = supportedLanguages.findIndex((l) => l.code === language);
+    const nextLang = supportedLanguages[(currentIndex + 1) % supportedLanguages.length];
+    setLanguage(nextLang.code);
   };
 
   const cycleTextSize = () => {
@@ -90,7 +93,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentPage, onNavigat
             className="flex items-center gap-3 text-left focus:outline-none focus:ring-2 focus:ring-sahaaya-primary rounded-xl p-1"
           >
             <div className="w-11 h-11 rounded-2xl bg-sahaaya-cream flex items-center justify-center border-2 border-sahaaya-primary/30 flex-shrink-0">
-              <span className="text-2xl font-bold text-sahaaya-primary">സ</span>
+              <span className="text-2xl font-black text-sahaaya-primary">കൂ</span>
             </div>
             <div>
               <h1 className="text-xl sm:text-2xl font-black text-sahaaya-primary tracking-tight leading-tight">
@@ -138,10 +141,10 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentPage, onNavigat
             <button
               onClick={toggleLanguage}
               className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border-2 border-sahaaya-primary bg-sahaaya-accentLight hover:bg-sahaaya-cream text-sahaaya-primary font-bold text-sm min-h-[48px] justify-center focus:outline-none focus:ring-2 focus:ring-sahaaya-primary transition-colors"
-              aria-label={`Switch language to ${language === 'en' ? 'Malayalam' : 'English'}`}
+              aria-label="Switch language"
             >
               <Globe className="w-4 h-4" />
-              <span>{language === 'en' ? 'മലയാളം' : 'English'}</span>
+              <span>{supportedLanguages.find((l) => l.code === language)?.nativeName || 'English'}</span>
             </button>
           </div>
         </div>

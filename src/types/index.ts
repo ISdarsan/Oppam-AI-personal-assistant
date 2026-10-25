@@ -1,5 +1,18 @@
-export type Language = 'en' | 'ml';
+export type Language =
+  | 'en' // English
+  | 'ml' // Malayalam (മലയാളം)
+  | 'es' // Spanish (Español)
+  | 'fr' // French (Français)
+  | 'de' // German (Deutsch)
+  | 'pt' // Portuguese (Português)
+  | 'it' // Italian (Italiano)
+  | 'ar' // Arabic (العربية)
+  | 'ja' // Japanese (日本語)
+  | 'zh'; // Chinese (中文)
+
 export type TextSize = 'normal' | 'large' | 'xlarge';
+
+export type ReminderCategory = 'medicine' | 'doctor' | 'call' | 'water' | 'general';
 
 export interface Reminder {
   id: string;
@@ -7,7 +20,9 @@ export interface Reminder {
   date: string; // YYYY-MM-DD
   time: string; // HH:MM (24-hour)
   description?: string;
+  category?: ReminderCategory;
   completed: boolean;
+  completedAt?: number;
   createdAt: number;
 }
 
@@ -17,6 +32,7 @@ export interface Contact {
   relationship: string;
   phone: string;
   notes?: string;
+  isPrimary?: boolean;
 }
 
 export interface UserSettings {
@@ -42,6 +58,7 @@ export interface ReminderIntentData {
   date?: string;
   time?: string;
   description?: string;
+  category?: ReminderCategory;
   requires_confirmation: boolean;
 }
 

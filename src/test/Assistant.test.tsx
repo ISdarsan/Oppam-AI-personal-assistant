@@ -17,10 +17,10 @@ describe('AssistantPage', () => {
       </LanguageProvider>
     );
 
-    expect(screen.getByText('Talk with Sahaaya')).toBeInTheDocument();
+    expect(screen.getByText('Talk with Koode')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Tap to Speak/i })).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/Remind me to take my medicine/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Ask Sahaaya/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Ask Koode/i })).toBeInTheDocument();
   });
 
   it('displays structured confirmation card when reminder intent is returned', async () => {
@@ -46,7 +46,7 @@ describe('AssistantPage', () => {
     const input = screen.getByPlaceholderText(/Remind me to take my medicine/i);
     fireEvent.change(input, { target: { value: 'Remind me to call my daughter at 6 PM' } });
 
-    const askBtn = screen.getByRole('button', { name: /Ask Sahaaya/i });
+    const askBtn = screen.getByRole('button', { name: /Ask Koode/i });
     fireEvent.click(askBtn);
 
     await waitFor(() => {
@@ -72,7 +72,7 @@ describe('AssistantPage', () => {
     const input = screen.getByPlaceholderText(/Remind me to take my medicine/i);
     fireEvent.change(input, { target: { value: 'Hello' } });
 
-    const askBtn = screen.getByRole('button', { name: /Ask Sahaaya/i });
+    const askBtn = screen.getByRole('button', { name: /Ask Koode/i });
     fireEvent.click(askBtn);
 
     await waitFor(() => {

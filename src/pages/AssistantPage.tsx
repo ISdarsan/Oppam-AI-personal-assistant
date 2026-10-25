@@ -21,6 +21,7 @@ import { api, ApiError } from '../services/api';
 import { storage } from '../services/storage';
 import { AssistantResponse, ReminderIntentData } from '../types';
 import { formatFriendlyDate, formatFriendlyTime, getTodayDateString } from '../utils/dateUtils';
+import { triggerHapticFeedback } from '../utils/communication';
 
 interface AssistantPageProps {
   onReminderSaved?: () => void;
@@ -54,6 +55,7 @@ export const AssistantPage: React.FC<AssistantPageProps> = ({ onReminderSaved })
   }, [transcript]);
 
   const handleMicToggle = () => {
+    triggerHapticFeedback(50);
     if (isListening) {
       stopListening();
     } else {
@@ -349,7 +351,7 @@ export const AssistantPage: React.FC<AssistantPageProps> = ({ onReminderSaved })
             <div className="flex items-center gap-2 text-sahaaya-primary font-bold text-lg">
               <Sparkles className="w-5 h-5" />
               <span>
-                {language === 'ml' ? 'സഹായയുടെ മറുപടി:' : 'Sahaaya says:'}
+                {language === 'ml' ? 'കൂടെയുടെ മറുപടി:' : 'Koode says:'}
               </span>
             </div>
             {isTtsSupported && (

@@ -1,10 +1,24 @@
 """
 Prompt templates for Sahaaya AI.
 Engineered for open-weight models (e.g. Gemma 2:2b) to output strict, well-structured JSON.
+Supports multilingual global languages.
 """
 
+LANG_NAME_MAP = {
+    "en": "English",
+    "ml": "Malayalam",
+    "es": "Spanish",
+    "fr": "French",
+    "de": "German",
+    "pt": "Portuguese",
+    "it": "Italian",
+    "ar": "Arabic",
+    "zh": "Chinese",
+    "ja": "Japanese",
+}
+
 def get_assistant_interpret_prompt(user_text: str, current_time_str: str, language: str) -> str:
-    lang_name = "Malayalam" if language == "ml" else "English"
+    lang_name = LANG_NAME_MAP.get(language, "English")
     return f"""You are Sahaaya AI, a warm, reassuring, highly reliable digital companion for elderly users.
 Today's local reference time is: {current_time_str}.
 User's preferred response language is: {lang_name}.
@@ -46,7 +60,7 @@ OUTPUT FORMAT: Return ONLY a valid JSON object with NO extra text or markdown co
 """
 
 def get_message_explain_prompt(message_text: str, language: str) -> str:
-    lang_name = "Malayalam" if language == "ml" else "English"
+    lang_name = LANG_NAME_MAP.get(language, "English")
     return f"""You are Sahaaya AI, an expert, caring assistant helping older adults understand confusing messages, notices, or SMS.
 User's preferred response language is: {lang_name}.
 
@@ -60,7 +74,7 @@ Guidelines:
 2. Extract only real facts and dates that explicitly appear in the text. DO NOT fabricate or guess details.
 3. If this is a medical or prescription notice, explain what is written but NEVER change prescriptions or invent dosages.
 4. Check for safety red flags: requests for passwords, OTP, bank account numbers, UPI PINs, emergency money transfers, lottery claims, or suspicious links. If found, highlight them clearly and set is_suspicious to true.
-5. Provide clear action advice.
+5. Provide clear action advice in {lang_name}.
 
 OUTPUT FORMAT: Return ONLY a valid JSON object with NO markdown formatting or commentary:
 {{

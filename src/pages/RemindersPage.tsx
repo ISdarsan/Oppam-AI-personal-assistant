@@ -8,6 +8,11 @@ import {
   Trash2,
   Edit2,
   AlertCircle,
+  Pill,
+  Stethoscope,
+  Phone,
+  Droplet,
+  ClipboardList,
 } from 'lucide-react';
 import { useLanguage } from '../i18n/LanguageContext';
 import { Button } from '../components/ui/Button';
@@ -16,7 +21,7 @@ import { Badge } from '../components/ui/Badge';
 import { Modal } from '../components/ui/Modal';
 import { Input } from '../components/ui/Input';
 import { storage } from '../services/storage';
-import { Reminder } from '../types';
+import { Reminder, ReminderCategory } from '../types';
 import {
   isToday,
   isOverdue,
@@ -25,6 +30,7 @@ import {
   getTodayDateString,
   getCurrentTimeString,
 } from '../utils/dateUtils';
+import { triggerHapticFeedback } from '../utils/communication';
 
 interface RemindersPageProps {
   isAddModalOpen?: boolean;
@@ -45,6 +51,7 @@ export const RemindersPage: React.FC<RemindersPageProps> = ({
   const [date, setDate] = useState(getTodayDateString());
   const [time, setTime] = useState(getCurrentTimeString());
   const [description, setDescription] = useState('');
+  const [category, setCategory] = useState<ReminderCategory>('medicine');
   const [formError, setFormError] = useState<string | null>(null);
 
   // Delete confirmation
@@ -65,21 +72,25 @@ export const RemindersPage: React.FC<RemindersPageProps> = ({
   };
 
   const openAddModal = () => {
+    triggerHapticFeedback(40);
     setEditingReminder(null);
     setTitle('');
     setDate(getTodayDateString());
     setTime(getCurrentTimeString());
     setDescription('');
+    setCategory('medicine');
     setFormError(null);
     setIsModalOpen(true);
   };
 
   const openEditModal = (r: Reminder) => {
+    triggerHapticFeedback(40);
     setEditingReminder(r);
     setTitle(r.title);
     setDate(r.date);
     setTime(r.time);
     setDescription(r.description || '');
+    setCategory(r.category || 'general');
     setFormError(null);
     setIsModalOpen(true);
   };
@@ -113,6 +124,8 @@ export const RemindersPage: React.FC<RemindersPageProps> = ({
       return;
     }
 
+    triggerHapticFeedback(60);
+
     if (editingReminder) {
       storage.updateReminder({
         ...editingReminder,
@@ -120,6 +133,7 @@ export const RemindersPage: React.FC<RemindersPageProps> = ({
         date,
         time,
         description: description.trim() || undefined,
+        category,
       });
     } else {
       storage.saveReminder({
@@ -127,6 +141,7 @@ export const RemindersPage: React.FC<RemindersPageProps> = ({
         date,
         time,
         description: description.trim() || undefined,
+        category,
         completed: false,
       });
     }
@@ -136,21 +151,57 @@ export const RemindersPage: React.FC<RemindersPageProps> = ({
   };
 
   const handleToggle = (id: string) => {
+    triggerHapticFeedback(60);
     storage.toggleReminder(id);
     loadReminders();
   };
 
   const confirmDelete = (reminder: Reminder) => {
+    triggerHapticFeedback(40);
     setReminderToDelete(reminder);
   };
 
   const handleDelete = () => {
     if (reminderToDelete) {
+      triggerHapticFeedback(80);
       storage.deleteReminder(reminderToDelete.id);
       setReminderToDelete(null);
       loadReminders();
     }
   };
+
+  const categories: { id: ReminderCategory; label: string; icon: React.ReactNode; color: string }[] = [
+    {
+      id: 'medicine',
+      label: language === 'ml' ? '💊 മരുന്ന്' : '💊 Medicine',
+      icon: <Pill className="w-5 h-5" />,
+      color: 'bg-rose-100 text-rose-800 border-rose-300',
+    },
+    {
+      id: 'doctor',
+      label: language === 'ml' ? '🩺 ഡോക്ടർ' : '🩺 Doctor',
+      icon: <Stethoscope className="w-5 h-5" />,
+      color: 'bg-blue-100 text-blue-800 border-blue-300',
+    },
+    {
+      id: 'call',
+      label: language === 'ml' ? '📞 വിളി' : '📞 Call Family',
+      icon: <Phone className="w-5 h-5" />,
+      color: 'bg-emerald-100 text-emerald-800 border-emerald-300',
+    },
+    {
+      id: 'water',
+      label: language === 'ml' ? '💧 ആരോഗ്യം' : '💧 Health/Water',
+      icon: <Droplet className="w-5 h-5" />,
+      color: 'bg-cyan-100 text-cyan-800 border-cyan-300',
+    },
+    {
+      id: 'general',
+      label: language === 'ml' ? '📋 മറ്റുള്ളവ' : '📋 General',
+      icon: <ClipboardList className="w-5 h-5" />,
+      color: 'bg-amber-100 text-amber-800 border-amber-300',
+    },
+  ];
 
   return (
     <div className="flex flex-col gap-6">
@@ -191,13 +242,14 @@ export const RemindersPage: React.FC<RemindersPageProps> = ({
           {reminders.map((reminder) => {
             const overdue = !reminder.completed && isOverdue(reminder.date, reminder.time);
             const today = isToday(reminder.date);
+            const cat = categories.find((c) => c.id === reminder.category);
 
             return (
               <Card
                 key={reminder.id}
                 className={`p-5 sm:p-6 transition-all ${
                   reminder.completed
-                    ? 'bg-gray-50 border-gray-200 opacity-60'
+                    ? 'bg-gray-50 border-gray-200 opacity-75'
                     : overdue
                     ? 'border-2 border-rose-300 bg-rose-50/40 shadow-sm'
                     : today
@@ -224,16 +276,25 @@ export const RemindersPage: React.FC<RemindersPageProps> = ({
                       )}
                     </button>
 
-                    <div className="flex flex-col gap-1">
-                      <h3
-                        className={`text-xl sm:text-2xl font-bold leading-snug ${
-                          reminder.completed
-                            ? 'line-through text-gray-500'
-                            : 'text-sahaaya-text'
-                        }`}
-                      >
-                        {reminder.title}
-                      </h3>
+                    <div className="flex flex-col gap-1.5">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3
+                          className={`text-xl sm:text-2xl font-bold leading-snug ${
+                            reminder.completed
+                              ? 'line-through text-gray-500'
+                              : 'text-sahaaya-text'
+                          }`}
+                        >
+                          {reminder.title}
+                        </h3>
+                        {cat && (
+                          <span
+                            className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${cat.color}`}
+                          >
+                            {cat.label}
+                          </span>
+                        )}
+                      </div>
 
                       <div className="flex flex-wrap items-center gap-3 text-base sm:text-lg font-semibold text-sahaaya-muted">
                         <span className="flex items-center gap-1.5">
@@ -245,6 +306,16 @@ export const RemindersPage: React.FC<RemindersPageProps> = ({
                           <Clock className="w-4 h-4" />
                           <span>{formatFriendlyTime(reminder.time, language)}</span>
                         </span>
+
+                        {reminder.completed && reminder.completedAt && (
+                          <span className="text-sm font-bold text-emerald-700 bg-emerald-100 px-3 py-0.5 rounded-full">
+                            ✓ {t('completedAtLabel')}{' '}
+                            {new Date(reminder.completedAt).toLocaleTimeString([], {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </span>
+                        )}
                       </div>
 
                       {reminder.description && (
@@ -293,13 +364,39 @@ export const RemindersPage: React.FC<RemindersPageProps> = ({
         </div>
       )}
 
-      {/* Add / Edit Modal */}
+      {/* Add / Edit Reminder Modal */}
       <Modal
         isOpen={isModalOpen}
         onClose={closeModal}
         title={editingReminder ? t('remindersEdit') : t('remindersAddNew')}
       >
         <form onSubmit={handleSaveReminder} noValidate className="flex flex-col gap-5">
+          {/* Category Chips */}
+          <div>
+            <label className="block text-base font-bold text-sahaaya-text mb-2">
+              {language === 'ml' ? 'വിഭാഗം തിരഞ്ഞെടുക്കുക' : 'Category'}
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {categories.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => {
+                    triggerHapticFeedback(30);
+                    setCategory(c.id);
+                  }}
+                  className={`px-3.5 py-2 rounded-xl text-sm font-bold border-2 transition-all min-h-[44px] ${
+                    category === c.id
+                      ? 'border-sahaaya-primary bg-emerald-100 text-emerald-950 scale-105 shadow-sm'
+                      : 'border-sahaaya-border bg-white text-sahaaya-muted hover:bg-sahaaya-cream'
+                  }`}
+                >
+                  {c.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <Input
             label={t('remindersTitleField')}
             placeholder={t('remindersTitlePlaceholder')}
@@ -326,22 +423,12 @@ export const RemindersPage: React.FC<RemindersPageProps> = ({
             />
           </div>
 
-          <div className="flex flex-col gap-2">
-            <label
-              htmlFor="reminder-notes"
-              className="text-lg font-semibold text-sahaaya-text"
-            >
-              {t('remindersDescField')}
-            </label>
-            <textarea
-              id="reminder-notes"
-              rows={2}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder={t('remindersDescPlaceholder')}
-              className="w-full px-4 py-3 text-lg rounded-2xl border-2 border-sahaaya-border focus:border-sahaaya-primary focus:outline-none focus:ring-4 focus:ring-sahaaya-primary/20 bg-white text-sahaaya-text resize-none"
-            />
-          </div>
+          <Input
+            label={t('remindersDescField')}
+            placeholder={t('remindersDescPlaceholder')}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
 
           {formError && (
             <p className="text-base font-bold text-sahaaya-alert">{formError}</p>
@@ -349,7 +436,7 @@ export const RemindersPage: React.FC<RemindersPageProps> = ({
 
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-sahaaya-border">
             <Button type="button" variant="ghost" onClick={closeModal}>
-              {t('remindersCancelBtn')}
+              {t('btnCancel')}
             </Button>
             <Button type="submit" variant="primary">
               {t('remindersSaveBtn')}

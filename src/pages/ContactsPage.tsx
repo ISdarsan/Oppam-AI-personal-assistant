@@ -7,7 +7,9 @@ import {
   Edit2,
   Users,
   AlertCircle,
-  Send,
+  Star,
+  MessageCircle,
+  ShieldAlert,
 } from 'lucide-react';
 import { useLanguage } from '../i18n/LanguageContext';
 import { Button } from '../components/ui/Button';
@@ -16,6 +18,13 @@ import { Modal } from '../components/ui/Modal';
 import { Input } from '../components/ui/Input';
 import { storage } from '../services/storage';
 import { Contact } from '../types';
+import {
+  makePhoneCall,
+  openWhatsAppMessage,
+  sendSMSMessage,
+  getPreparedHelpMessage,
+  triggerHapticFeedback,
+} from '../utils/communication';
 
 export const ContactsPage: React.FC = () => {
   const { language, t } = useLanguage();
@@ -28,9 +37,10 @@ export const ContactsPage: React.FC = () => {
   const [relationship, setRelationship] = useState('');
   const [phone, setPhone] = useState('');
   const [notes, setNotes] = useState('');
+  const [isPrimary, setIsPrimary] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
-  // Message preview modal
+  // Quick message modal
   const [messageTarget, setMessageTarget] = useState<Contact | null>(null);
 
   // Delete modal
@@ -45,21 +55,25 @@ export const ContactsPage: React.FC = () => {
   };
 
   const openAddModal = () => {
+    triggerHapticFeedback(40);
     setEditingContact(null);
     setName('');
     setRelationship('');
     setPhone('');
     setNotes('');
+    setIsPrimary(contacts.length === 0);
     setFormError(null);
     setIsModalOpen(true);
   };
 
   const openEditModal = (c: Contact) => {
+    triggerHapticFeedback(40);
     setEditingContact(c);
     setName(c.name);
     setRelationship(c.relationship);
     setPhone(c.phone);
     setNotes(c.notes || '');
+    setIsPrimary(Boolean(c.isPrimary));
     setFormError(null);
     setIsModalOpen(true);
   };
@@ -80,6 +94,8 @@ export const ContactsPage: React.FC = () => {
       return;
     }
 
+    triggerHapticFeedback(60);
+
     if (editingContact) {
       storage.updateContact({
         ...editingContact,
@@ -87,6 +103,7 @@ export const ContactsPage: React.FC = () => {
         relationship: relationship.trim() || 'Family',
         phone: phone.trim(),
         notes: notes.trim() || undefined,
+        isPrimary,
       });
     } else {
       storage.saveContact({
@@ -94,6 +111,7 @@ export const ContactsPage: React.FC = () => {
         relationship: relationship.trim() || 'Family',
         phone: phone.trim(),
         notes: notes.trim() || undefined,
+        isPrimary,
       });
     }
 
@@ -103,16 +121,19 @@ export const ContactsPage: React.FC = () => {
 
   const handleDelete = () => {
     if (contactToDelete) {
+      triggerHapticFeedback(80);
       storage.deleteContact(contactToDelete.id);
       setContactToDelete(null);
       loadContacts();
     }
   };
 
-  const getPreparedMessage = (contactName: string) => {
-    return language === 'ml'
-      ? `നമസ്കാരം ${contactName}, എനിക്ക് ഒരു സഹായം വേണമായിരുന്നു. സൗകര്യപ്പെടുമ്പോൾ എന്നെ ഒന്ന് തിരിച്ചുവിളിക്കാമോ?`
-      : `Hello ${contactName}, I need a little help. Could you please call me when you are free?`;
+  const handleTogglePrimary = (contact: Contact) => {
+    triggerHapticFeedback(50);
+    // Unset primary on others if setting this one
+    const updated = { ...contact, isPrimary: !contact.isPrimary };
+    storage.updateContact(updated);
+    loadContacts();
   };
 
   return (
@@ -135,6 +156,18 @@ export const ContactsPage: React.FC = () => {
         </Button>
       </div>
 
+      {/* Emergency Guidance Notice */}
+      <div className="bg-emerald-50 border-2 border-emerald-200/80 rounded-2xl p-4 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <ShieldAlert className="w-6 h-6 text-emerald-800 flex-shrink-0" />
+          <p className="text-base text-emerald-950 font-medium">
+            {language === 'ml'
+              ? 'സ്റ്റാർ (★) അടയാളമുള്ള ബന്ധുവിലേക്ക് ആയിരിക്കും അടിയന്തിര SOS കോൾ പോവുക.'
+              : 'The contact marked with a star (★) will be called first during an Emergency SOS.'}
+          </p>
+        </div>
+      </div>
+
       {/* Contacts List */}
       {contacts.length === 0 ? (
         <Card className="py-12 text-center flex flex-col items-center gap-4 bg-white">
@@ -145,72 +178,129 @@ export const ContactsPage: React.FC = () => {
           </Button>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 gap-4">
-          {contacts.map((contact) => (
-            <Card
-              key={contact.id}
-              className="p-6 bg-white border-2 border-sahaaya-border hover:border-sahaaya-primary/40 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-5"
-            >
-              {/* Contact Information */}
-              <div className="flex items-start gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-sahaaya-cream text-sahaaya-primary flex items-center justify-center font-bold text-2xl flex-shrink-0 border border-sahaaya-primary/20">
-                  {contact.name.charAt(0).toUpperCase()}
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-2xl font-black text-sahaaya-text">{contact.name}</h3>
-                    <span className="text-sm font-semibold bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full">
-                      {contact.relationship}
-                    </span>
+        <div className="grid grid-cols-1 gap-5">
+          {contacts.map((contact) => {
+            const preparedMsg = getPreparedHelpMessage(contact.name, language);
+
+            return (
+              <Card
+                key={contact.id}
+                className={`p-6 bg-white border-2 transition-all ${
+                  contact.isPrimary
+                    ? 'border-emerald-500 shadow-md ring-2 ring-emerald-100'
+                    : 'border-sahaaya-border hover:border-sahaaya-primary/40'
+                }`}
+              >
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+                  {/* Contact Information */}
+                  <div className="flex items-start gap-4">
+                    <div className="w-16 h-16 rounded-2xl bg-sahaaya-cream text-sahaaya-primary flex items-center justify-center font-black text-2xl flex-shrink-0 border-2 border-sahaaya-primary/20">
+                      {contact.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2.5 flex-wrap">
+                        <h3 className="text-2xl sm:text-3xl font-black text-sahaaya-text">
+                          {contact.name}
+                        </h3>
+                        <span className="text-sm font-bold bg-emerald-100 text-emerald-900 px-3 py-1 rounded-full">
+                          {contact.relationship}
+                        </span>
+                        {contact.isPrimary && (
+                          <span className="text-xs font-black bg-amber-100 text-amber-900 border border-amber-300 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                            <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-600" />
+                            {language === 'ml' ? 'പ്രധാന നമ്പർ (Primary)' : 'Primary Contact'}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xl sm:text-2xl font-extrabold text-sahaaya-primary mt-1 tracking-wide font-mono">
+                        {contact.phone}
+                      </p>
+                      {contact.notes && (
+                        <p className="text-base text-sahaaya-muted mt-1">{contact.notes}</p>
+                      )}
+                    </div>
                   </div>
-                  <p className="text-xl font-bold text-sahaaya-primary mt-0.5 tracking-wide">
-                    {contact.phone}
-                  </p>
-                  {contact.notes && (
-                    <p className="text-base text-sahaaya-muted mt-1">{contact.notes}</p>
-                  )}
+
+                  {/* Multi-Channel Quick Action Buttons (Call, WhatsApp, SMS) */}
+                  <div className="flex flex-wrap items-center gap-2.5 pt-3 lg:pt-0 border-t lg:border-t-0 border-sahaaya-border">
+                    {/* 1. Phone Call */}
+                    <button
+                      onClick={() => makePhoneCall(contact.phone)}
+                      className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 bg-sahaaya-primary hover:bg-sahaaya-primaryHover text-white px-5 py-3.5 rounded-2xl font-bold text-base sm:text-lg min-h-[52px] shadow-sm transition-transform active:scale-95"
+                      aria-label={`Call ${contact.name}`}
+                    >
+                      <PhoneCall className="w-5 h-5" />
+                      <span>{t('contactsCallNow')}</span>
+                    </button>
+
+                    {/* 2. WhatsApp Message */}
+                    <button
+                      onClick={() => openWhatsAppMessage(contact.phone, preparedMsg)}
+                      className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#1EBE5D] text-white px-5 py-3.5 rounded-2xl font-bold text-base min-h-[52px] shadow-sm transition-transform active:scale-95"
+                      aria-label={`WhatsApp ${contact.name}`}
+                    >
+                      <MessageCircle className="w-5 h-5 fill-white" />
+                      <span>{t('contactsWhatsApp')}</span>
+                    </button>
+
+                    {/* 3. SMS Message Preview */}
+                    <button
+                      onClick={() => {
+                        triggerHapticFeedback(40);
+                        setMessageTarget(contact);
+                      }}
+                      className="inline-flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-700 text-white px-4 py-3.5 rounded-2xl font-bold text-base min-h-[52px] shadow-sm transition-transform active:scale-95"
+                      aria-label={`Send help message to ${contact.name}`}
+                    >
+                      <MessageSquare className="w-5 h-5" />
+                      <span>{t('contactsSendMessage')}</span>
+                    </button>
+
+                    {/* 4. Secondary actions (Star primary, Edit, Delete) */}
+                    <div className="flex items-center gap-1 ml-auto">
+                      <button
+                        onClick={() => handleTogglePrimary(contact)}
+                        className={`p-3 rounded-xl min-h-[48px] min-w-[48px] flex items-center justify-center transition-colors ${
+                          contact.isPrimary
+                            ? 'text-amber-500 hover:bg-amber-50'
+                            : 'text-gray-400 hover:text-amber-500 hover:bg-amber-50'
+                        }`}
+                        title={
+                          contact.isPrimary
+                            ? 'Primary Emergency Contact'
+                            : 'Set as Primary Emergency Contact'
+                        }
+                        aria-label="Set as Primary Emergency Contact"
+                      >
+                        <Star
+                          className={`w-6 h-6 ${contact.isPrimary ? 'fill-amber-400 text-amber-500' : ''}`}
+                        />
+                      </button>
+
+                      <button
+                        onClick={() => openEditModal(contact)}
+                        className="p-3 rounded-xl text-sahaaya-muted hover:text-sahaaya-primary hover:bg-sahaaya-cream min-h-[48px] min-w-[48px] flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-sahaaya-primary"
+                        aria-label="Edit contact"
+                      >
+                        <Edit2 className="w-5 h-5" />
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          triggerHapticFeedback(50);
+                          setContactToDelete(contact);
+                        }}
+                        className="p-3 rounded-xl text-sahaaya-muted hover:text-sahaaya-alert hover:bg-rose-50 min-h-[48px] min-w-[48px] flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-sahaaya-alert"
+                        aria-label="Delete contact"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </div>
-
-              {/* Action Buttons: 1-Tap Call & Send Message */}
-              <div className="flex flex-wrap items-center gap-3">
-                <a
-                  href={`tel:${contact.phone}`}
-                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 bg-sahaaya-primary hover:bg-sahaaya-primaryHover text-white px-6 py-3.5 rounded-2xl font-bold text-lg min-h-[52px] shadow-sm transition-transform active:scale-95"
-                  aria-label={`Call ${contact.name}`}
-                >
-                  <PhoneCall className="w-6 h-6" />
-                  <span>{t('contactsCallNow')}</span>
-                </a>
-
-                <button
-                  onClick={() => setMessageTarget(contact)}
-                  className="inline-flex items-center justify-center gap-2 bg-white hover:bg-sahaaya-cream border-2 border-sahaaya-border text-sahaaya-text px-4 py-3.5 rounded-2xl font-bold text-base min-h-[52px] transition-colors"
-                  aria-label={`Send help message to ${contact.name}`}
-                >
-                  <MessageSquare className="w-5 h-5 text-sahaaya-primary" />
-                  <span>{t('contactsSendMessage')}</span>
-                </button>
-
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => openEditModal(contact)}
-                    className="p-3 rounded-xl text-sahaaya-muted hover:text-sahaaya-primary hover:bg-sahaaya-cream min-h-[48px] min-w-[48px] flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-sahaaya-primary"
-                    aria-label="Edit contact"
-                  >
-                    <Edit2 className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={() => setContactToDelete(contact)}
-                    className="p-3 rounded-xl text-sahaaya-muted hover:text-sahaaya-alert hover:bg-rose-50 min-h-[48px] min-w-[48px] flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-sahaaya-alert"
-                    aria-label="Delete contact"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            );
+          })}
         </div>
       )}
 
@@ -253,6 +343,20 @@ export const ContactsPage: React.FC = () => {
             onChange={(e) => setNotes(e.target.value)}
           />
 
+          <label className="flex items-center gap-3 p-3 bg-emerald-50 rounded-xl border border-emerald-200 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={isPrimary}
+              onChange={(e) => setIsPrimary(e.target.checked)}
+              className="w-6 h-6 text-sahaaya-primary rounded accent-sahaaya-primary cursor-pointer"
+            />
+            <span className="text-base font-bold text-emerald-950">
+              {language === 'ml'
+                ? 'പ്രധാന അടിയന്തിര കോൺടാക്റ്റ് ആക്കുക (Primary for SOS)'
+                : 'Set as Primary Emergency Contact (Called during SOS)'}
+            </span>
+          </label>
+
           {formError && (
             <p className="text-base font-bold text-sahaaya-alert">{formError}</p>
           )}
@@ -283,7 +387,7 @@ export const ContactsPage: React.FC = () => {
             </p>
 
             <div className="bg-sahaaya-cream/60 p-5 rounded-2xl border border-sahaaya-border text-xl font-medium text-sahaaya-text leading-relaxed">
-              "{getPreparedMessage(messageTarget.name)}"
+              "{getPreparedHelpMessage(messageTarget.name, language)}"
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-4 border-t border-sahaaya-border">
@@ -294,16 +398,17 @@ export const ContactsPage: React.FC = () => {
               >
                 {t('btnCancel')}
               </Button>
-              <a
-                href={`sms:${messageTarget.phone}?body=${encodeURIComponent(
-                  getPreparedMessage(messageTarget.name)
-                )}`}
-                onClick={() => setMessageTarget(null)}
+              <button
+                type="button"
+                onClick={() => {
+                  sendSMSMessage(messageTarget.phone, getPreparedHelpMessage(messageTarget.name, language));
+                  setMessageTarget(null);
+                }}
                 className="inline-flex items-center justify-center gap-2 bg-sahaaya-primary hover:bg-sahaaya-primaryHover text-white px-6 py-3.5 rounded-2xl font-bold text-lg min-h-[52px] shadow-sm w-full sm:w-auto"
               >
-                <Send className="w-5 h-5" />
-                <span>{language === 'ml' ? 'സന്ദേശം തുറക്കുക' : 'Open SMS App'}</span>
-              </a>
+                <MessageSquare className="w-5 h-5" />
+                <span>{language === 'ml' ? 'സന്ദേശം അയക്കുക (SMS)' : 'Open SMS App'}</span>
+              </button>
             </div>
           </div>
         )}

@@ -17,7 +17,7 @@ describe('DashboardPage', () => {
       </LanguageProvider>
     );
 
-    expect(screen.getByText(/Talk to Sahaaya/i)).toBeInTheDocument();
+    expect(screen.getByText(/Talk to Koode/i)).toBeInTheDocument();
     expect(screen.getAllByText(/Add Reminder/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/What to remember today/i)).toBeInTheDocument();
   });

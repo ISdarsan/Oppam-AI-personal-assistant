@@ -12,6 +12,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { useLanguage } from '../i18n/LanguageContext';
+import { supportedLanguages } from '../i18n/translations';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
@@ -94,27 +95,24 @@ export const SettingsPage: React.FC = () => {
             <Globe className="w-5 h-5 text-sahaaya-primary" />
             <span>{t('settingsLanguage')}</span>
           </label>
-          <div className="grid grid-cols-2 gap-3 max-w-md">
-            <button
-              onClick={() => setLanguage('ml')}
-              className={`py-3.5 px-4 rounded-2xl font-bold text-lg border-2 transition-all min-h-[52px] ${
-                language === 'ml'
-                  ? 'bg-sahaaya-primary text-white border-sahaaya-primary shadow-sm'
-                  : 'bg-white text-sahaaya-text border-sahaaya-border hover:border-sahaaya-primary'
-              }`}
-            >
-              മലയാളം (Malayalam)
-            </button>
-            <button
-              onClick={() => setLanguage('en')}
-              className={`py-3.5 px-4 rounded-2xl font-bold text-lg border-2 transition-all min-h-[52px] ${
-                language === 'en'
-                  ? 'bg-sahaaya-primary text-white border-sahaaya-primary shadow-sm'
-                  : 'bg-white text-sahaaya-text border-sahaaya-border hover:border-sahaaya-primary'
-              }`}
-            >
-              English
-            </button>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5">
+            {supportedLanguages.map((lang) => (
+              <button
+                key={lang.code}
+                type="button"
+                onClick={() => setLanguage(lang.code)}
+                className={`py-3 px-3 rounded-2xl font-bold border-2 transition-all min-h-[52px] text-center flex flex-col items-center justify-center ${
+                  language === lang.code
+                    ? 'bg-sahaaya-primary text-white border-sahaaya-primary shadow-sm'
+                    : 'bg-white text-sahaaya-text border-sahaaya-border hover:border-sahaaya-primary'
+                }`}
+              >
+                <span className="text-base sm:text-lg">{lang.nativeName}</span>
+                <span className={`text-xs ${language === lang.code ? 'text-emerald-100' : 'text-sahaaya-muted'}`}>
+                  {lang.label}
+                </span>
+              </button>
+            ))}
           </div>
         </div>
 
@@ -205,7 +203,7 @@ export const SettingsPage: React.FC = () => {
           {saveFeedback && (
             <span className="text-emerald-700 font-bold text-base flex items-center gap-1.5 animate-fadeIn">
               <CheckCircle className="w-5 h-5" />
-              <span>{language === 'ml' ? 'മാറ്റങ്ങൾ സൂക്ഷിച്ചു!' : 'Preferences saved!'}</span>
+              <span>{t('btnSave')} ✓</span>
             </span>
           )}
         </div>
@@ -333,9 +331,7 @@ export const SettingsPage: React.FC = () => {
                 {t('settingsResetConfirm')}
               </p>
               <p className="text-base text-sahaaya-muted mt-2">
-                {language === 'ml'
-                  ? 'ഇത് നിങ്ങളുടെ എല്ലാ ഓർമ്മപ്പെടുത്തലുകളെയും ബന്ധപ്പെടേണ്ട നമ്പറുകളെയും ഈ ഉപകരണത്തിൽ നിന്ന് പൂർണ്ണമായും മായ്ക്കും.'
-                  : 'This will erase all your reminders, contacts, and custom settings on this device.'}
+                This will erase all your reminders, contacts, and custom settings on this device.
               </p>
             </div>
           </div>

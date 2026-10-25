@@ -18,6 +18,19 @@ declare global {
   }
 }
 
+const SPEECH_LOCALE_MAP: Record<Language, string> = {
+  en: 'en-US',
+  ml: 'ml-IN',
+  es: 'es-ES',
+  fr: 'fr-FR',
+  de: 'de-DE',
+  pt: 'pt-PT',
+  it: 'it-IT',
+  ar: 'ar-SA',
+  zh: 'zh-CN',
+  ja: 'ja-JP',
+};
+
 export function useSpeechRecognition(language: Language): SpeechRecognitionHook {
   const [isListening, setIsListening] = useState<boolean>(false);
   const [transcript, setTranscript] = useState<string>('');
@@ -36,7 +49,7 @@ export function useSpeechRecognition(language: Language): SpeechRecognitionHook 
 
     recognition.continuous = false;
     recognition.interimResults = true;
-    recognition.lang = language === 'ml' ? 'ml-IN' : 'en-IN';
+    recognition.lang = SPEECH_LOCALE_MAP[language] || 'en-US';
 
     recognition.onresult = (event: any) => {
       let currentTranscript = '';

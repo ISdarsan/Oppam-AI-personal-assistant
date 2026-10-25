@@ -1,262 +1,209 @@
-# Sahaaya AI (സഹായ AI)
+# Koode AI (കൂടെ AI)
 
-> **Tagline:** A little help, a more independent life.  
+> **Tagline:** Always by your side • എന്നും നിങ്ങളുടെ കൂടെ  
 > **Challenge:** Hacktoberfest 2026 DEV Challenge — Week 3: *“Slow and Steady”*  
 > **Tags:** `#devchallenge` `#hf26challenge`
 
 ---
 
-## 1. Project Overview
+## 1. Project Overview & Name Origin
 
-**Sahaaya AI** is a Malayalam-friendly, voice-first digital companion designed with care for older adults. By pairing local-first privacy with open-weight AI inference (Google's Gemma open models via Ollama), Sahaaya AI helps seniors live independently without the confusion of complex smartphone interfaces, cloud trackers, or aggressive notification spam.
+**Koode AI** (**കൂടെ AI**) is a compassionate, voice-first companion designed from the ground up for older adults. In Malayalam, the word *"Koode"* (കൂടെ) means *"By your side"* or *"With you"*—reflecting our belief that technology for elders should never feel like a clinical medical device or a confusing corporate portal; it should feel like a patient, loving companion always sitting beside you.
 
-Sahaaya AI solves three everyday hurdles for elderly users:
-1. **Never forget daily essentials:** Voice-driven and manually configured reminders for medicines, clinic visits, and calls with family.
-2. **Understand confusing messages:** An AI assistant that deciphers confusing hospital notices, bank SMS, and government letters into simple language while flagging suspicious requests for passwords, OTPs, or urgent payments.
-3. **One-tap connection to loved ones:** Reassuring, large-target call buttons and pre-composed help messages that connect users to their trusted family contacts without searching through contacts books.
+Built for the **Hacktoberfest 2026 DEV Challenge — Week 3 ("Slow and Steady")**, Koode AI combines **local-first privacy** with open-weight AI inference (**Google Gemma 2:2b** via **Ollama**). It helps seniors maintain their autonomy and peace of mind without passwords, cloud data trackers, aggressive notification spam, or tricky multi-step navigation.
 
----
-
-## 2. Problem Statement
-
-Modern mobile applications are designed for speed and information density: tiny typography, multi-level dropdowns, hidden hamburger menus, and fast-paced animations. For older adults—especially those whose primary language is Malayalam and who face age-related visual or cognitive fatigue—digital technology often feels alienating and stressful.
-
-Furthermore, elderly people are disproportionately targeted by deceptive financial and OTP phishing scams sent via SMS. Typical commercial chatbots send private health and message data to remote cloud servers. Sahaaya AI brings compassionate accessibility and open-weight AI directly to local hardware, ensuring all reminders, family contacts, and message transcripts remain private and under user control.
+### The 4 Pillars of Koode AI
+1. **Never forget daily essentials:** Voice-first or 1-tap scheduling for medicines (💊), clinic appointments (🩺), family calls (📞), and hydration (💧), backed by clear confirmation timestamps (*"✓ Done today at 8:15 PM"*).
+2. **Understand confusing messages & stay safe:** An AI-powered plain-language interpreter that deciphers confusing hospital discharge instructions, utility notices, and bank SMS, with proactive warnings against financial scams, fake OTP requests, and urgent payment schemes.
+3. **Real, working communication (Call, WhatsApp, SMS, SOS):** Direct phone dialer triggers (`tel:`), instant WhatsApp chat integration, pre-composed SMS assistance messages, and an unmissable 1-tap **Emergency SOS** distress broadcast.
+4. **Installable phone application (PWA):** Installs cleanly onto Android or iPhone home screens with a single tap, providing a native full-screen app experience, standalone status bar, and offline service worker caching.
 
 ---
 
-## 3. Architecture & Data Flow
+## 2. Senior Ergonomics & Accessible Design System
 
-Sahaaya AI follows a **Local-First Architecture**. User data (reminders, contacts, preferences) is persisted directly in browser storage (`localStorage` / IndexedDB). AI requests (reminder intent interpretation and message explanation) are processed by a local Python FastAPI gateway communicating with an open-weight Gemma model hosted locally through Ollama.
+Older adults face physical and sensory realities that mainstream software frequently ignores: presbyopia (diminished close-up visual acuity), tremors or reduced motor precision, arthritis, slower cognitive processing, and anxiety about pressing the "wrong button".
+
+Koode AI was engineered with senior human-computer interaction (HCI) best practices:
+
+| Elder Need | Senior UX Solution in Koode AI |
+| :--- | :--- |
+| **Reduced Fine Motor Control & Tremors** | Huge touch targets (minimum 52–64px), generous margins between interactive controls, and zero tiny icon-only links without accessible descriptions. |
+| **Presbyopia & Aging Vision** | 3-stage dynamic text scaling (Normal 18px, Large 20px, Extra Large 22px), high WCAG 2.2 AA contrast with dark forest greens and cream backgrounds (`#FBF9F5`), and custom Malayalam script kerning (`Noto Sans Malayalam`). |
+| **Cognitive Memory Load & Anxiety** | Explicit confirmation dialogs before saving or deleting; immediate reassuring state feedback (*"✓ Done at 8:15 PM"*) so elders never worry if they already took their pill. |
+| **Tactile & Auditory Reassurance** | Subtle haptic vibrations (`navigator.vibrate`) on key button presses, and gentle sine-wave chime notifications synthesized through the Web Audio API without bulky audio assets. |
+| **Multi-Channel Communication** | Direct Phone Calling, WhatsApp Web/App messaging, native SMS, and Web Share API. Older adults can choose whichever medium their family uses most. |
+
+---
+
+## 3. Global Multilingual Interface
+
+Koode AI offers complete, native localization across **10 global languages**:
+- **English** (`en`)
+- **മലയാളം — Malayalam** (`ml`)
+- **Español — Spanish** (`es`)
+- **Français — French** (`fr`)
+- **Deutsch — German** (`de`)
+- **Português — Portuguese** (`pt`)
+- **Italiano — Italian** (`it`)
+- **العربية — Arabic** (`ar` - with RTL support)
+- **中文 — Chinese** (`zh`)
+- **日本語 — Japanese** (`ja`)
+
+Every screen, modal, error notice, and voice response adapts seamlessly to the elder's preferred language.
+
+---
+
+## 4. Architecture & Data Flow
+
+Koode AI follows a **Local-First, Privacy-Centric Architecture**. Sensitive health information, medication schedules, and family phone numbers are kept strictly on the user's device (`localStorage` / IndexedDB).
 
 ```mermaid
 flowchart TD
-    subgraph Client["Elderly User Interface (React + Vite + TypeScript)"]
-        UI[Touch & Voice Interface]
-        SpeechRec[Speech Recognition - ml-IN / en-IN]
-        TTS[Speech Synthesis - Local Text-to-Speech]
-        Store[(Local Browser Storage - Reminders & Contacts)]
+    subgraph MobileDevice["Elder's Phone / Device (PWA)"]
+        UI["Senior-Friendly Touch & Voice UI"]
+        ServiceWorker["Service Worker (sw.js - Cache & Offline)"]
+        LocalStorage[("Local Storage (koode_reminders & koode_contacts)")]
+        CommBridge["Communication Bridge (Phone, WhatsApp, SMS, WebShare)"]
+        SpeechEngine["Browser Speech Engine (Voice Recognition & TTS)"]
     end
 
-    subgraph Backend["Local Backend Gateway (FastAPI)"]
-        API[API Router /api]
-        SchemaVal[Pydantic Schema Validation]
-        PromptEng[Prompt Templates & Guardrails]
-        OllamaClt[Async HTTP Client]
+    subgraph Backend["Local AI Gateway (FastAPI)"]
+        API["FastAPI /api Gateway"]
+        Pydantic["Schema Validation & Bounds Checking"]
+        PromptEng["Multilingual Guardrails & Prompt Engine"]
+        HTTPX["Async HTTPX Client"]
     end
 
     subgraph OpenWeightAI["Open-Weight Inference Engine"]
-        Ollama[Ollama Local Server]
-        Gemma[Gemma 2:2b Open-Weight Model]
+        Ollama["Ollama Daemon (http://localhost:11434)"]
+        GemmaModel["Google Gemma 2:2b Open-Weight Model"]
     end
 
-    UI <--> SpeechRec
-    UI <--> TTS
-    UI <--> Store
-    UI -- "REST JSON (CORS Restricted)" --> API
-    API --> SchemaVal
-    SchemaVal --> PromptEng
-    PromptEng --> OllamaClt
-    OllamaClt -- "http://localhost:11434" --> Ollama
-    Ollama --> Gemma
+    UI <--> ServiceWorker
+    UI <--> LocalStorage
+    UI --> CommBridge
+    UI <--> SpeechEngine
+    UI -- "REST JSON (/api/assistant, /api/explainer)" --> API
+    API --> Pydantic
+    Pydantic --> PromptEng
+    PromptEng --> HTTPX
+    HTTPX --> Ollama
+    Ollama --> GemmaModel
 ```
 
 ---
 
-## 4. Key Features
+## 5. Mobile Phone Installation (PWA)
 
-### A. Welcoming Setup (No Accounts Required)
-- **Zero Registration:** No passwords, phone verification, or third-party sign-ins.
-- **Language Selection:** Instant choice between **മലയാളം (Malayalam)** and **English**.
-- **Clear Permissions:** Transparent explanation of microphone usage and notifications; permissions are never requested on initial page load.
-
-### B. High-Accessibility Design System
-- **Touch-Friendly Controls:** All primary interactive elements exceed 48×48px touch target requirements.
-- **Warm & Reassuring Palette:** Soft off-white backgrounds (`#FBF9F5`), gentle sage green accents (`#2D6A4F`), and high-contrast charcoal text (`#1E2D24`).
-- **Dynamic Text Scaling:** One-tap toggle between **Normal (18px)**, **Large (20px)**, and **Extra Large (22px)** with clean Malayalam font rendering (`Noto Sans Malayalam`, `Manjari`).
-- **Dual Visual Status:** Status is never communicated using color alone; distinct semantic icons and text badges accompany every state.
-
-### C. Voice-First Digital Assistant
-- Speak instructions in Malayalam or English (e.g., *"രാത്രി എട്ട് മണിക്ക് ഗുളിക കഴിക്കാൻ ഓർമ്മിപ്പിക്കുക"* or *"Remind me to call my daughter at six this evening"*).
-- Visual microphone indicator with real-time editable transcription review.
-- Model interprets requests into structured schemas (`create_reminder`, `clarification_needed`, `explain_message`).
-- **Mandatory Human Confirmation:** Sahaaya never schedules a reminder without explicit user confirmation on a summary card.
-- **Ambiguity Guard:** If the requested time or date is missing, Sahaaya asks a gentle clarifying question instead of guessing.
-
-### D. Daily Reminder Management
-- Persisted locally across page refreshes.
-- Chronological ordering highlighting **Due Today**, **Upcoming**, and **Overdue** items.
-- Gentle audible chime (synthesized via Web Audio API sine waves, requiring no external media files) and top-banner alert when a reminder is due.
-- Safe two-step deletion confirmation.
-
-### E. "Help Me Understand" (Message Explainer)
-- Paste confusing SMS, hospital discharge notes, or official notices.
-- Produces a 4-part breakdown:
-  1. **In Simple Words (ലളിതമായി പറഞ്ഞാൽ):** Clear, jargon-free summary.
-  2. **Important Details (പ്രധാന വിവരങ്ങൾ):** Dates, times, and contact numbers extracted verbatim.
-  3. **What You May Need To Do (നിങ്ങൾ ചെയ്യേണ്ടത്):** Step-by-step actionable advice.
-  4. **Things to Check & Safety Warnings (ശ്രദ്ധിക്കേണ്ട കാര്യങ്ങൾ):** Proactive scam warning if OTPs, banking PINs, or urgent wire transfers are mentioned.
-- Medical and banking disclaimer reminding users to confirm directly with their healthcare professional or bank branch.
-
-### F. Trusted Family Contacts
-- Dedicated cards for trusted loved ones with prominent, one-tap calling (`tel:` protocol).
-- Pre-composed assistance messages reviewable before launching the native SMS application.
+Koode AI is a fully compliant **Progressive Web App (PWA)**:
+- **Web App Manifest (`public/manifest.webmanifest`):** Configured with `display: "standalone"`, orientation `portrait`, and theme color `#2D6A4F`.
+- **Service Worker (`public/sw.js`):** Intercepts static assets, fonts, and scripts, serving them from cache for instant offline startup.
+- **In-App Install Banner:** Automatically detects when the browser supports installation and presents a warm, friendly card inviting the user to install Koode to their home screen.
+- **iOS Safari Support:** Clear instructions guiding iPhone users to tap *Share ⎙* and select *Add to Home Screen*.
 
 ---
 
-## 5. Why Open-Weight AI Matters
+## 6. Real Communication Features
 
-Sahaaya AI deliberately leverages **open-weight models** (such as Google Gemma 2:2b) running locally via Ollama:
-- **Absolute Privacy:** Vulnerable health notifications, prescription notes, and personal family conversations are never transmitted to third-party cloud aggregators or used to train advertising models.
-- **Offline Resilience:** Once downloaded, core intent parsing and reasoning function completely on-device without continuous internet access.
-- **Hardware Accessibility:** Gemma 2:2b has a compact memory footprint (~1.6 GB VRAM/RAM), allowing it to run smoothly on standard laptops and modest home desktops without expensive enterprise GPUs.
-- **Adaptability:** Developers can customize prompt parameters, add domain vocabularies, or fine-tune models to local dialects without vendor lock-in or subscription API fees.
+Elders need instant, friction-free ways to reach their loved ones:
+
+### 1. Emergency SOS Alert
+- **High-Visibility Red Banner:** Accessible right at the top of the Home Dashboard.
+- **2-Stage Safety Trigger:** Prevents accidental pocket triggers with an unmistakable confirmation dialog showing the trusted contact's name and number.
+- **Haptic Feedback:** Vibrates with an SOS pattern (`[150, 80, 150]`).
+- **Dual Action:** Automatically initiates a direct phone call and queues an urgent distress message via WhatsApp/SMS:  
+  *`"EMERGENCY: [Grandma Radha] I need immediate assistance! Please call me right away."`*
+
+### 2. One-Tap Phone Calling (`tel:`)
+- Dials family members instantly without navigating confusing smartphone dialers.
+
+### 3. WhatsApp Integration (`wa.me`)
+- Opens WhatsApp with a polite, pre-composed greeting:  
+  *`"നമസ്കാരം ലക്ഷ്മി, എനിക്ക് ഒരു ചെറിയ സഹായം വേണമായിരുന്നു. സൗകര്യപ്പെടുമ്പോൾ എന്നെ ഒന്ന് തിരിച്ചുവിളിക്കാമോ?"`*  
+  *(Hello Lakshmi, I need a little help. Could you please call me when you have a moment?)*
+
+### 4. Native SMS & Web Share API
+- Launches the native messaging app with prepared messages formatted for both iOS and Android.
 
 ---
 
-## 6. Technology Stack
+## 7. Technology Stack
 
 | Layer | Technologies |
 | :--- | :--- |
-| **Frontend** | React 18, Vite, TypeScript |
-| **Styling** | Tailwind CSS (Custom accessibility tokens & font scales) |
-| **Icons** | Lucide React |
-| **Backend** | Python 3.13, FastAPI, Uvicorn, Pydantic v2 |
-| **HTTP & AI Client** | HTTPX (Async) |
-| **Local AI Engine** | Ollama with `gemma2:2b` open-weight model |
-| **Speech APIs** | Web Speech API (`SpeechRecognition` & `SpeechSynthesis`) |
+| **Frontend** | React 18, Vite, TypeScript, Tailwind CSS, Lucide Icons |
+| **Mobile / PWA** | Web App Manifest, Service Worker (`sw.js`), Web Audio API, Web Speech API, Web Share API |
+| **Backend** | Python 3.13, FastAPI, Uvicorn, Pydantic v2, HTTPX |
+| **Open-Weight AI** | Google Gemma 2:2b running on Ollama |
 | **Testing** | Vitest, React Testing Library, Pytest, Pytest-Asyncio |
 
 ---
 
-## 7. Windows Local Setup Guide
+## 8. Quickstart & Installation
 
 ### Prerequisites
-- **Node.js**: v18+ (Tested on Node v24)
-- **Python**: 3.10+ (Tested on Python 3.13)
-- **Ollama**: (Optional for full AI reasoning, app runs in graceful degraded mode when offline)
+- **Node.js**: v18+ (Tested on v24)
+- **Python**: 3.10+ (Tested on 3.13)
+- **Ollama**: (Optional for AI reasoning; app runs in 100% operational offline fallback mode without it)
 
-### Step 1: Clone the Repository
+### Step 1: Start the Python Backend
 ```powershell
+# Navigate to project directory
 cd C:\Users\OWNER\OneDrive\Desktop\test
-```
-
-### Step 2: Set up the Python Backend
-```powershell
-# Create virtual environment
-python -m venv .venv
 
 # Activate virtual environment
 .\.venv\Scripts\Activate.ps1
 
-# Install dependencies
+# Install dependencies (if not already installed)
 pip install -r backend\requirements.txt
 
-# Start backend server
+# Start FastAPI server
 uvicorn app.main:app --app-dir backend --reload --port 8000
 ```
-Backend API docs will be accessible at: `http://localhost:8000/docs`  
-Health status endpoint: `http://localhost:8000/api/health`
+Backend API docs: `http://localhost:8000/docs`  
+Health endpoint: `http://localhost:8000/api/health`
 
-### Step 3: Set up the React Frontend
-In a new terminal window:
+### Step 2: Start the React Frontend
+In another terminal:
 ```powershell
 # Install frontend dependencies
 npm install
 
-# Start development server
+# Start Vite dev server
 npm run dev
 ```
-Open your browser at `http://localhost:5173`.
+Open `http://localhost:5173` in your browser or phone browser.
 
----
-
-## 8. Ollama & Open-Weight Model Setup
-
-To enable genuine local AI inference:
-
-1. **Install Ollama:** Download the Windows installer from [ollama.com](https://ollama.com).
-2. **Start Ollama:** Open PowerShell and run:
-   ```powershell
-   ollama serve
-   ```
-3. **Pull the Gemma 2:2b open-weight model:**
-   ```powershell
-   ollama run gemma2:2b
-   ```
-4. **Hardware Requirements:**
-   - RAM: Minimum 4 GB available system RAM.
-   - Storage: ~1.6 GB for the model weights.
-   - GPU: Optional (Ollama automatically utilizes CPU if no dedicated GPU is available).
-
-*Note: If Ollama is not running, Sahaaya AI continues to function in graceful offline mode with non-AI features (manual reminder creation, completing reminders, and trusted contacts management) remaining 100% operational.*
-
----
-
-## 9. Running the Test Suite
-
-Both backend and frontend feature thorough automated test suites covering input validation, error handling, mock AI inference, and user workflows.
-
-### Run Backend Pytest Suite
+### Step 3: (Optional) Start Open-Weight Gemma AI
 ```powershell
+# In a terminal window:
+ollama run gemma2:2b
+```
+
+---
+
+## 9. Verification & Test Suite
+
+Both backend and frontend maintain full automated test coverage:
+
+```powershell
+# 1. Run Python Backend Tests
 .\.venv\Scripts\pytest backend\tests -v
-```
-*Result: 8/8 tests pass (100% pass rate).*
+# Output: 8 passed in 1.43s (100% pass rate)
 
-### Run Frontend Vitest Suite
-```powershell
+# 2. Run React Frontend Tests
 npm test
-```
-*Result: 19/19 tests pass across 6 test files.*
+# Output: 6 passed (6 test files), 19 passed (19 tests)
 
-### Build Frontend Production Bundle
-```powershell
+# 3. Compile Production Bundle
 npm run build
+# Output: Clean TypeScript compilation & Vite bundling (Zero errors)
 ```
-*Result: Clean TypeScript compilation and Vite bundling.*
 
 ---
 
-## 10. Walkthrough & Demo Script
+## 10. License & Acknowledgments
 
-Follow this script to verify the core user journey:
-
-1. **Onboarding:**
-   - Launch `http://localhost:5173`.
-   - Choose language: Select **മലയാളം** or **English**.
-   - Enter your preferred name (e.g., *"Grandma Radha"*).
-   - Tap **Get Started**.
-2. **Reviewing the Dashboard:**
-   - Notice the time-based greeting (*"Good morning, Grandma Radha!"*).
-   - Observe the current date and empty reminder notice.
-3. **Creating a Reminder by Voice or Text:**
-   - Tap **Talk to Sahaaya**.
-   - Either tap the large green microphone or type into the input field:  
-     `"Remind me to take my blood pressure medicine at 8 tonight"`
-   - Tap **Ask Sahaaya**.
-   - Observe the confirmation card detailing title (`Blood pressure medicine`), date (`Today`), and time (`20:00`).
-   - Tap **Yes, Save Reminder**.
-   - Return to Home: the reminder is now displayed under *"What to remember today"*.
-4. **Deciphering a Confusing Message:**
-   - Tap **Help Me Understand** on the bottom navigation.
-   - Tap the sample button **"Suspicious Bank SMS"**.
-   - Tap **Explain in Simple Words**.
-   - Notice the prominent red **Security Warning** alerting that OTPs should never be shared, accompanied by an accessible plain-language breakdown.
-5. **Calling a Family Member:**
-   - Tap **Family Contacts** on the bottom navigation.
-   - View your trusted contact (e.g., *Lakshmi - Daughter*).
-   - Tap **Call Now** to trigger the phone dialer, or tap **Send Help Message** to review a polite, prepared SMS.
-
----
-
-## 11. Known Limitations & Future Work
-
-- **Browser Speech Recognition in Regional Languages:** Native browser `webkitSpeechRecognition` for Malayalam (`ml-IN`) depends on operating-system speech engine support. Where unsupported by the browser, Sahaaya provides text input and transcription editing as a seamless fallback. Future iterations can integrate an on-device Whisper model via WebAssembly.
-- **Background Push Notifications:** Browser notifications when the tab is completely closed require service worker background sync permissions. Currently, Sahaaya emphasizes reliable in-app visual and audio alerts while the application is open.
-- **Dialect Adaptation:** While Gemma 2:2b handles standard Malayalam and English well, colloquial regional Malayalam idioms can be improved in future releases using LoRA fine-tuning with open community datasets.
-
----
-
-## 12. License
-
-This project is licensed under the MIT License. Open-weight Gemma models are distributed under the Gemma Terms of Use.
+This project is open-source under the MIT License.  
+Developed with passion and care for older adults everywhere as part of the **Hacktoberfest 2026 DEV Challenge — Week 3**.

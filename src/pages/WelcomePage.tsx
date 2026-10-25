@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Globe, Mic, ShieldCheck, ArrowRight, UserPlus } from 'lucide-react';
 import { useLanguage } from '../i18n/LanguageContext';
+import { supportedLanguages } from '../i18n/translations';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { storage } from '../services/storage';
@@ -24,7 +25,7 @@ export const WelcomePage: React.FC<WelcomePageProps> = ({ onComplete }) => {
     if (contactName.trim() && contactPhone.trim()) {
       storage.saveContact({
         name: contactName.trim(),
-        relationship: language === 'ml' ? 'കുടുംബാംഗം' : 'Family',
+        relationship: 'Family',
         phone: contactPhone.trim(),
       });
     }
@@ -57,29 +58,24 @@ export const WelcomePage: React.FC<WelcomePageProps> = ({ onComplete }) => {
             <Globe className="w-5 h-5 text-sahaaya-primary" />
             <span>{t('welcomeChooseLang')}</span>
           </label>
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              type="button"
-              onClick={() => setLanguage('ml')}
-              className={`py-3.5 px-4 rounded-xl font-bold text-lg border-2 transition-all min-h-[48px] ${
-                language === 'ml'
-                  ? 'bg-sahaaya-primary text-white border-sahaaya-primary shadow-sm'
-                  : 'bg-white text-sahaaya-text border-sahaaya-border hover:border-sahaaya-primary'
-              }`}
-            >
-              മലയാളം (Malayalam)
-            </button>
-            <button
-              type="button"
-              onClick={() => setLanguage('en')}
-              className={`py-3.5 px-4 rounded-xl font-bold text-lg border-2 transition-all min-h-[48px] ${
-                language === 'en'
-                  ? 'bg-sahaaya-primary text-white border-sahaaya-primary shadow-sm'
-                  : 'bg-white text-sahaaya-text border-sahaaya-border hover:border-sahaaya-primary'
-              }`}
-            >
-              English
-            </button>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+            {supportedLanguages.map((lang) => (
+              <button
+                key={lang.code}
+                type="button"
+                onClick={() => setLanguage(lang.code)}
+                className={`py-3 px-3 rounded-xl font-bold text-base sm:text-lg border-2 transition-all min-h-[48px] text-center flex flex-col items-center justify-center ${
+                  language === lang.code
+                    ? 'bg-sahaaya-primary text-white border-sahaaya-primary shadow-sm'
+                    : 'bg-white text-sahaaya-text border-sahaaya-border hover:border-sahaaya-primary'
+                }`}
+              >
+                <span>{lang.nativeName}</span>
+                <span className={`text-xs ${language === lang.code ? 'text-emerald-100' : 'text-sahaaya-muted'}`}>
+                  {lang.label}
+                </span>
+              </button>
+            ))}
           </div>
         </div>
 
@@ -87,7 +83,7 @@ export const WelcomePage: React.FC<WelcomePageProps> = ({ onComplete }) => {
         <div className="flex flex-col gap-2">
           <Input
             label={t('welcomeNamePrompt')}
-            placeholder={language === 'ml' ? 'ഉദാ: അപ്പൂപ്പൻ, മേനോൻ, അമ്മ' : 'e.g., Grandfather, Menon, Amma'}
+            placeholder="e.g., Grandfather, Amma, Grandma, Abuelo, Oma"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
           />
@@ -97,7 +93,7 @@ export const WelcomePage: React.FC<WelcomePageProps> = ({ onComplete }) => {
         <div className="bg-sahaaya-cream/40 rounded-2xl p-5 border border-sahaaya-border flex flex-col gap-3">
           <h2 className="text-lg font-bold text-sahaaya-text flex items-center gap-2">
             <UserPlus className="w-5 h-5 text-sahaaya-primary" />
-            <span>{language === 'ml' ? 'കുടുംബാംഗത്തിന്റെ നമ്പർ (വേണമെങ്കിൽ മാത്രം):' : 'Trusted Family Contact (Optional):'}</span>
+            <span>{t('contactsTitle')} (Optional):</span>
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Input

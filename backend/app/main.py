@@ -6,7 +6,7 @@ from .api import health, assistant, explainer
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
-    description="Backend API for Sahaaya AI — A Malayalam-friendly elderly companion powered by open-weight AI.",
+    description="Backend API for Koode AI — A compassionate, multilingual elderly companion powered by open-weight AI.",
     docs_url="/docs",
     redoc_url="/redoc"
 )

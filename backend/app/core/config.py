@@ -2,7 +2,7 @@ import os
 from pydantic import BaseModel
 
 class Settings(BaseModel):
-    APP_NAME: str = "Sahaaya AI Backend"
+    APP_NAME: str = "Koode AI Backend"
     APP_VERSION: str = "1.0.0"
     API_PREFIX: str = "/api"
     

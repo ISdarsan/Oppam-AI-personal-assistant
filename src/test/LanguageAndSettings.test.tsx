@@ -19,7 +19,7 @@ describe('Settings and Language Switching', () => {
     expect(screen.getByText('Settings & Privacy')).toBeInTheDocument();
 
     // Click Malayalam language button
-    const mlBtn = screen.getByText('മലയാളം (Malayalam)');
+    const mlBtn = screen.getByText('മലയാളം');
     fireEvent.click(mlBtn);
 
     // Language in HTML document root should now be ml
