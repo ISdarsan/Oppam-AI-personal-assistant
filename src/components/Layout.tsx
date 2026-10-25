@@ -129,21 +129,22 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentPage, onNavigat
           <div className="flex items-center gap-2">
             {/* AI Status badge */}
             <div
-              className={`hidden md:flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border-2 ${
+              className={`hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold border-2 ${
                 health?.status === 'healthy'
                   ? 'bg-emerald-50 text-emerald-900 border-emerald-300'
                   : 'bg-amber-50 text-amber-950 border-amber-300'
               }`}
               title={health?.message || 'Checking local AI...'}
             >
-              <Sparkles className="w-4 h-4 text-emerald-700" />
-              <span>
-                {health?.status === 'healthy'
-                  ? `Gemma AI Ready`
-                  : health?.status === 'degraded'
-                  ? 'Model Pending'
-                  : 'AI Offline'}
-              </span>
+              <div className="flex items-center gap-1">
+                <Sparkles className="w-3.5 h-3.5 text-emerald-700" />
+                <span>{health?.status === 'healthy' ? 'Gemma Ready' : 'Local AI Offline'}</span>
+              </div>
+              {health?.sarvam_configured && (
+                <span className="bg-emerald-200/80 text-emerald-950 px-1.5 py-0.5 rounded text-[10px] font-black uppercase">
+                  Sarvam Voice
+                </span>
+              )}
             </div>
 
             {/* Dynamic Text Size toggle for Elders */}

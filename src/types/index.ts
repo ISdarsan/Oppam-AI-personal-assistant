@@ -50,6 +50,8 @@ export interface HealthStatus {
   model_available: boolean;
   configured_model: string;
   available_models: string[];
+  sarvam_configured?: boolean;
+  sarvam_model?: string;
   message: string;
 }
 
@@ -59,6 +61,7 @@ export interface ReminderIntentData {
   time?: string;
   description?: string;
   category?: ReminderCategory;
+  missing_fields?: string[];
   requires_confirmation: boolean;
 }
 
@@ -79,3 +82,28 @@ export interface ExplainResponse {
   is_suspicious: boolean;
   model_used: string;
 }
+
+export interface SpeechTranscribeResponse {
+  transcript: string;
+  language_code: string;
+  request_id?: string;
+  model: string;
+  mode: string;
+  duration_seconds?: number;
+}
+
+export interface SpeechStatusResponse {
+  configured: boolean;
+  model: string;
+  provider: string;
+  message: string;
+}
+
+export type AudioRecordingState =
+  | 'idle'
+  | 'requesting_permission'
+  | 'recording'
+  | 'uploading'
+  | 'transcribing'
+  | 'ready'
+  | 'error';

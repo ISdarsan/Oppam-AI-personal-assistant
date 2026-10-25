@@ -1,12 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .core.config import settings
-from .api import health, assistant, explainer
+from .api import health, assistant, explainer, speech
 
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
-    description="Backend API for Koode AI — A compassionate, multilingual elderly companion powered by open-weight AI.",
+    description="Backend API for Koode AI — A compassionate, multilingual elderly companion powered by Sarvam AI & open-weight Gemma.",
     docs_url="/docs",
     redoc_url="/redoc"
 )
@@ -25,6 +25,7 @@ app.add_middleware(
 app.include_router(health.router, prefix=settings.API_PREFIX)
 app.include_router(assistant.router, prefix=settings.API_PREFIX)
 app.include_router(explainer.router, prefix=settings.API_PREFIX)
+app.include_router(speech.router, prefix=settings.API_PREFIX)
 
 @app.get("/")
 async def root():
@@ -32,5 +33,6 @@ async def root():
         "app": settings.APP_NAME,
         "version": settings.APP_VERSION,
         "docs": "/docs",
-        "health": f"{settings.API_PREFIX}/health"
+        "health": f"{settings.API_PREFIX}/health",
+        "speech_status": f"{settings.API_PREFIX}/speech/status"
     }

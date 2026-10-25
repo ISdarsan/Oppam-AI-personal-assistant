@@ -6,20 +6,26 @@ import {
   Sparkles,
   CheckCircle,
   XCircle,
-  HelpCircle,
-  Volume2,
   Calendar,
   Clock,
   AlertTriangle,
+  Radio,
+  Pill,
+  Stethoscope,
+  Phone,
+  Droplet,
+  ClipboardList,
+  Cloud,
+  Edit3,
 } from 'lucide-react';
 import { useLanguage } from '../i18n/LanguageContext';
-import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
+import { useSarvamAudioRecorder } from '../hooks/useSarvamAudioRecorder';
 import { useSpeechSynthesis } from '../hooks/useSpeechSynthesis';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { api, ApiError } from '../services/api';
 import { storage } from '../services/storage';
-import { AssistantResponse, ReminderIntentData } from '../types';
+import { AssistantResponse, ReminderIntentData, ReminderCategory } from '../types';
 import { formatFriendlyDate, formatFriendlyTime, getTodayDateString } from '../utils/dateUtils';
 import { triggerHapticFeedback } from '../utils/communication';
 
@@ -34,35 +40,46 @@ export const AssistantPage: React.FC<AssistantPageProps> = ({ onReminderSaved })
   const [lastResponse, setLastResponse] = useState<AssistantResponse | null>(null);
   const [pendingReminder, setPendingReminder] = useState<ReminderIntentData | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorSuggestion, setErrorSuggestion] = useState<string | null>(null);
   const [successNotice, setSuccessNotice] = useState<string | null>(null);
+  const [transcribedWithSarvam, setTranscribedWithSarvam] = useState(false);
 
+  // Sarvam AI Voice Hook
   const {
-    isListening,
-    transcript,
-    isSupported: isSpeechSupported,
-    startListening,
-    stopListening,
-    resetTranscript,
-  } = useSpeechRecognition(language);
+    recordingDuration,
+    transcript: sarvamTranscript,
+    errorMessage: recorderError,
+    errorSuggestion: recorderSuggestion,
+    isRecording,
+    isProcessing: isTranscribing,
+    startRecording,
+    stopRecording,
+    cancelRecording,
+    reset: resetRecorder,
+  } = useSarvamAudioRecorder(language, (transcribed) => {
+    setInputText(transcribed);
+    setTranscribedWithSarvam(true);
+  });
 
-  const { speak, isSupported: isTtsSupported } = useSpeechSynthesis(settings.speechRate);
+  const { speak } = useSpeechSynthesis(settings.speechRate);
 
-  // Sync transcription to input field
+  // Sync Sarvam transcript to input box when ready
   useEffect(() => {
-    if (transcript) {
-      setInputText(transcript);
+    if (sarvamTranscript) {
+      setInputText(sarvamTranscript);
     }
-  }, [transcript]);
+  }, [sarvamTranscript]);
 
-  const handleMicToggle = () => {
-    triggerHapticFeedback(50);
-    if (isListening) {
-      stopListening();
+  const handleMicClick = async () => {
+    if (isRecording) {
+      stopRecording();
     } else {
       setErrorMessage(null);
+      setErrorSuggestion(null);
       setSuccessNotice(null);
       setPendingReminder(null);
-      startListening();
+      setTranscribedWithSarvam(false);
+      await startRecording();
     }
   };
 
@@ -70,12 +87,13 @@ export const AssistantPage: React.FC<AssistantPageProps> = ({ onReminderSaved })
     const query = (textToSubmit || inputText).trim();
     if (!query) return;
 
-    if (isListening) {
-      stopListening();
+    if (isRecording) {
+      stopRecording();
     }
 
     setIsProcessing(true);
     setErrorMessage(null);
+    setErrorSuggestion(null);
     setSuccessNotice(null);
     setPendingReminder(null);
 
@@ -91,9 +109,10 @@ export const AssistantPage: React.FC<AssistantPageProps> = ({ onReminderSaved })
         setPendingReminder(response.reminder_data);
       }
     } catch (err) {
-      console.error('Assistant error:', err);
+      console.error('Assistant interpretation error:', err);
       if (err instanceof ApiError) {
-        setErrorMessage(`${err.message} ${err.suggestion ? `(${err.suggestion})` : ''}`);
+        setErrorMessage(err.message);
+        setErrorSuggestion(err.suggestion || null);
       } else {
         setErrorMessage(t('assistantAIUnavailable'));
       }
@@ -109,13 +128,14 @@ export const AssistantPage: React.FC<AssistantPageProps> = ({ onReminderSaved })
 
     const reminderDate = pendingReminder.date || getTodayDateString();
     const reminderTime = pendingReminder.time || '18:00';
+    const category: ReminderCategory = pendingReminder.category || 'general';
 
     storage.saveReminder({
       title: pendingReminder.title,
       date: reminderDate,
       time: reminderTime,
       description: pendingReminder.description || undefined,
-      category: 'general',
+      category,
       completed: false,
     });
 
@@ -127,7 +147,8 @@ export const AssistantPage: React.FC<AssistantPageProps> = ({ onReminderSaved })
     setSuccessNotice(successMsg);
     setPendingReminder(null);
     setInputText('');
-    resetTranscript();
+    setTranscribedWithSarvam(false);
+    resetRecorder();
 
     if (settings.autoSpeak) {
       speak(successMsg, language);
@@ -146,6 +167,50 @@ export const AssistantPage: React.FC<AssistantPageProps> = ({ onReminderSaved })
     setSuccessNotice(cancelMsg);
     if (settings.autoSpeak) {
       speak(cancelMsg, language);
+    }
+  };
+
+  const getCategoryIcon = (category?: ReminderCategory) => {
+    switch (category) {
+      case 'medicine':
+        return <Pill className="w-6 h-6 text-rose-600" />;
+      case 'doctor':
+        return <Stethoscope className="w-6 h-6 text-blue-600" />;
+      case 'call':
+        return <Phone className="w-6 h-6 text-emerald-600" />;
+      case 'water':
+        return <Droplet className="w-6 h-6 text-cyan-600" />;
+      default:
+        return <ClipboardList className="w-6 h-6 text-amber-600" />;
+    }
+  };
+
+  const getCategoryLabel = (category?: ReminderCategory) => {
+    if (language === 'ml') {
+      switch (category) {
+        case 'medicine':
+          return 'മരുന്ന്';
+        case 'doctor':
+          return 'ഡോക്ടർ / ആശുപത്രി';
+        case 'call':
+          return 'ഫോൺ കോൾ';
+        case 'water':
+          return 'വെള്ളം കുടിക്കുക';
+        default:
+          return 'ഓർമ്മപ്പെടുത്തൽ';
+      }
+    }
+    switch (category) {
+      case 'medicine':
+        return 'Medicine';
+      case 'doctor':
+        return 'Doctor Visit';
+      case 'call':
+        return 'Phone Call';
+      case 'water':
+        return 'Hydration';
+      default:
+        return 'Reminder';
     }
   };
 
@@ -172,52 +237,141 @@ export const AssistantPage: React.FC<AssistantPageProps> = ({ onReminderSaved })
         <p className="text-lg sm:text-xl text-emerald-900/80 mt-1 font-medium">{t('assistantSubtitle')}</p>
       </div>
 
+      {/* Cloud Voice Privacy & Consent Disclosure */}
+      <div className="bg-emerald-50/80 border-2 border-emerald-300 rounded-2xl p-4 sm:p-5 flex items-start gap-3 shadow-xs">
+        <Cloud className="w-6 h-6 text-emerald-800 flex-shrink-0 mt-0.5" />
+        <div className="text-sm sm:text-base text-emerald-950 leading-relaxed font-medium">
+          <span className="font-black text-emerald-950">
+            {language === 'ml' ? 'ശബ്ദ തിരിച്ചറിയൽ വിവരണം:' : 'Voice Transcription Notice:'}
+          </span>{' '}
+          {language === 'ml'
+            ? 'നിങ്ങളുടെ ശബ്ദം സർവം AI (Sarvam AI Saaras) ക്ലൗഡ് സേവനം വഴി കൃത്യമായി മലയാളം / ഇംഗ്ലീഷ് അക്ഷരങ്ങളിലേക്ക് മാറ്റുന്നു. നിങ്ങൾ മൈക്രോഫോൺ ബട്ടൺ അമർത്തുമ്പോൾ മാത്രമേ ശബ്ദം റെക്കോർഡ് ചെയ്യുകയുള്ളൂ.'
+            : 'Spoken audio is securely transcribed into text using Sarvam AI Saaras (cloud model optimized for Indian languages & English). Audio is recorded only when you tap the microphone.'}
+        </div>
+      </div>
+
       {/* Main Voice & Text Interaction Card */}
-      <Card className="flex flex-col items-center gap-7 p-6 sm:p-10 bg-gradient-to-b from-white to-[#FBF9F5] border-2 border-stone-200">
-        {/* Large Glowing Microphone Button for Elderly Accessibility */}
-        <div className="flex flex-col items-center gap-4">
-          <button
-            onClick={handleMicToggle}
-            className={`w-32 h-32 sm:w-36 sm:h-36 rounded-full flex items-center justify-center transition-all duration-200 shadow-xl focus:outline-none focus:ring-8 focus:ring-emerald-700/30 cursor-pointer ${
-              isListening
-                ? 'bg-rose-600 text-white animate-pulse ring-8 ring-rose-200 scale-105'
-                : 'bg-emerald-800 hover:bg-emerald-900 text-white hover:scale-105 active:scale-95 border-4 border-emerald-900/40'
-            }`}
-            aria-label={isListening ? t('assistantMicStop') : t('assistantMicStart')}
-          >
-            {isListening ? (
-              <MicOff className="w-16 h-16 sm:w-18 sm:h-18" strokeWidth={2.5} />
-            ) : (
-              <Mic className="w-16 h-16 sm:w-18 sm:h-18" strokeWidth={2.5} />
+      <Card className="flex flex-col items-center gap-7 p-6 sm:p-10 bg-gradient-to-b from-white to-[#FBF9F5] border-2 border-stone-200 shadow-md">
+        {/* Large Accessible Microphone Action Area */}
+        <div className="flex flex-col items-center gap-4 w-full">
+          {/* Microphone Button */}
+          <div className="relative">
+            {isRecording && (
+              <span className="absolute -inset-3 rounded-full bg-rose-500/20 animate-ping pointer-events-none" />
             )}
-          </button>
+            <button
+              onClick={handleMicClick}
+              disabled={isTranscribing}
+              className={`w-32 h-32 sm:w-36 sm:h-36 rounded-full flex flex-col items-center justify-center transition-all duration-200 shadow-xl focus:outline-none focus:ring-8 focus:ring-emerald-700/30 cursor-pointer ${
+                isRecording
+                  ? 'bg-rose-600 hover:bg-rose-700 text-white animate-pulse ring-8 ring-rose-200 scale-105'
+                  : isTranscribing
+                  ? 'bg-amber-600 text-white cursor-wait'
+                  : 'bg-emerald-800 hover:bg-emerald-900 text-white hover:scale-105 active:scale-95 border-4 border-emerald-900/40'
+              }`}
+              aria-label={isRecording ? t('assistantMicStop') : t('assistantMicStart')}
+            >
+              {isRecording ? (
+                <>
+                  <MicOff className="w-14 h-14 sm:w-16 sm:h-16" strokeWidth={2.5} />
+                  <span className="text-xs font-black uppercase mt-1 tracking-wider">Stop</span>
+                </>
+              ) : isTranscribing ? (
+                <>
+                  <Radio className="w-14 h-14 sm:w-16 sm:h-16 animate-spin" strokeWidth={2.5} />
+                  <span className="text-xs font-black uppercase mt-1 tracking-wider">Transcribing</span>
+                </>
+              ) : (
+                <>
+                  <Mic className="w-14 h-14 sm:w-16 sm:h-16" strokeWidth={2.5} />
+                  <span className="text-xs font-black uppercase mt-1 tracking-wider">Speak</span>
+                </>
+              )}
+            </button>
+          </div>
 
-          <p className="text-2xl font-black text-emerald-950 text-center tracking-tight">
-            {isListening ? (
-              <span className="text-rose-600 animate-pulse">{t('assistantListening')}</span>
+          {/* Recording Timer & Status Label */}
+          <div className="text-center">
+            {isRecording ? (
+              <div className="flex flex-col items-center gap-1">
+                <div className="flex items-center gap-2 text-rose-600 font-black text-2xl animate-pulse">
+                  <span className="w-3.5 h-3.5 rounded-full bg-rose-600" />
+                  <span>
+                    00:{recordingDuration < 10 ? `0${recordingDuration}` : recordingDuration} / 00:30
+                  </span>
+                </div>
+                <p className="text-lg font-bold text-rose-700">
+                  {language === 'ml' ? 'ശ്രദ്ധയോടെ കേൾക്കുന്നു... (Sarvam AI)' : 'Listening... Tap Stop when done'}
+                </p>
+                <button
+                  onClick={cancelRecording}
+                  className="mt-2 text-sm text-stone-500 hover:text-rose-700 underline font-semibold cursor-pointer"
+                >
+                  {language === 'ml' ? 'റദ്ദാക്കുക' : 'Cancel recording'}
+                </button>
+              </div>
+            ) : isTranscribing ? (
+              <p className="text-xl font-black text-amber-800 animate-pulse">
+                {language === 'ml'
+                  ? 'സർവം AI ശബ്ദം മാറ്റിക്കൊണ്ടിരിക്കുന്നു...'
+                  : 'Transcribing speech with Sarvam AI...'}
+              </p>
             ) : (
-              t('assistantMicStart')
+              <p className="text-2xl font-black text-emerald-950 tracking-tight">
+                {t('assistantMicStart')}
+              </p>
             )}
-          </p>
-
-          {!isSpeechSupported && (
-            <p className="text-base text-stone-600 text-center max-w-md font-medium">
-              {t('assistantVoiceNotSupported')}
-            </p>
-          )}
+          </div>
         </div>
 
-        {/* Text Input & Review Box */}
+        {/* Audio Recorder Error Banner */}
+        {recorderError && (
+          <div
+            role="alert"
+            className="w-full bg-rose-50 border-2 border-rose-400 rounded-3xl p-5 flex items-start gap-4 shadow-sm"
+          >
+            <AlertTriangle className="w-7 h-7 text-rose-700 flex-shrink-0 mt-0.5" />
+            <div>
+              <h4 className="font-black text-lg text-rose-950">
+                {language === 'ml' ? 'ശബ്ദ റെക്കോർഡിംഗ് അറിയിപ്പ്' : 'Voice Recording Notice'}
+              </h4>
+              <p className="text-base text-rose-900 mt-0.5 font-medium">{recorderError}</p>
+              {recorderSuggestion && (
+                <p className="text-sm text-rose-800 mt-1 font-semibold">{recorderSuggestion}</p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Transcribed Badge if populated via Sarvam */}
+        {transcribedWithSarvam && inputText && (
+          <div className="w-full bg-emerald-50 border-2 border-emerald-400 rounded-2xl px-4 py-2.5 flex items-center gap-2.5 text-emerald-900 text-sm sm:text-base font-bold">
+            <CheckCircle className="w-5 h-5 text-emerald-700 flex-shrink-0" />
+            <span>
+              {language === 'ml'
+                ? 'സർവം AI വഴി ശബ്ദം മാറ്റി നൽകി. അയയ്ക്കുന്നതിന് മുൻപ് മാറ്റങ്ങൾ വരുത്താം:'
+                : 'Transcribed by Sarvam AI. Review or edit below before sending:'}
+            </span>
+          </div>
+        )}
+
+        {/* Editable Transcript Textarea */}
         <div className="w-full flex flex-col gap-3">
-          <label htmlFor="assistant-input" className="text-lg sm:text-xl font-black text-emerald-950">
-            {language === 'ml' ? 'നിങ്ങളുടെ ചോദ്യം അല്ലെങ്കിൽ ഓർമ്മപ്പെടുത്തൽ:' : 'Your request:'}
+          <label htmlFor="assistant-input" className="text-lg sm:text-xl font-black text-emerald-950 flex items-center gap-2">
+            <Edit3 className="w-5 h-5 text-emerald-800" />
+            <span>
+              {language === 'ml' ? 'നിങ്ങളുടെ ചോദ്യം അല്ലെങ്കിൽ ഓർമ്മപ്പെടുത്തൽ:' : 'Your request:'}
+            </span>
           </label>
           <div className="relative">
             <textarea
               id="assistant-input"
               rows={3}
               value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
+              onChange={(e) => {
+                setInputText(e.target.value);
+                setTranscribedWithSarvam(false);
+              }}
               placeholder={t('assistantPlaceholder')}
               className="w-full p-4 sm:p-5 text-xl rounded-2xl border-2 border-stone-300 focus:border-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-700/20 bg-white text-emerald-950 placeholder:text-stone-400 resize-none font-medium leading-relaxed"
             />
@@ -226,8 +380,8 @@ export const AssistantPage: React.FC<AssistantPageProps> = ({ onReminderSaved })
           <div className="flex flex-wrap items-center justify-between gap-4">
             <span className="text-base text-emerald-900/80 font-medium">
               {language === 'ml'
-                ? 'സംസാരിച്ചതിന് ശേഷം മാറ്റങ്ങൾ വരുത്താം'
-                : 'You can edit the text before sending'}
+                ? 'എഴുതി നൽകുകയോ മാറ്റങ്ങൾ വരുത്തുകയോ ചെയ്യാം'
+                : 'You can type or edit your words freely'}
             </span>
             <Button
               size="lg"
@@ -277,6 +431,9 @@ export const AssistantPage: React.FC<AssistantPageProps> = ({ onReminderSaved })
               {language === 'ml' ? 'AI സഹായം ലഭ്യമല്ല' : 'AI Service Notice'}
             </h4>
             <p className="text-lg text-amber-900 mt-1 font-medium">{errorMessage}</p>
+            {errorSuggestion && (
+              <p className="text-sm text-amber-800 mt-1 font-bold">{errorSuggestion}</p>
+            )}
           </div>
         </div>
       )}
@@ -302,10 +459,21 @@ export const AssistantPage: React.FC<AssistantPageProps> = ({ onReminderSaved })
             </h3>
           </div>
 
-          <div className="bg-white rounded-3xl p-6 border-2 border-emerald-200 flex flex-col gap-3 shadow-xs">
-            <p className="text-2xl sm:text-3xl font-black text-emerald-900">
-              {pendingReminder.title}
-            </p>
+          <div className="bg-white rounded-3xl p-6 border-2 border-emerald-200 flex flex-col gap-4 shadow-xs">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-stone-100 border border-stone-200">
+                {getCategoryIcon(pendingReminder.category)}
+              </div>
+              <div>
+                <span className="text-xs font-black uppercase text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-md">
+                  {getCategoryLabel(pendingReminder.category)}
+                </span>
+                <p className="text-2xl sm:text-3xl font-black text-emerald-900 mt-0.5">
+                  {pendingReminder.title}
+                </p>
+              </div>
+            </div>
+
             <div className="flex flex-wrap items-center gap-5 text-xl font-bold text-emerald-950 mt-1">
               {pendingReminder.date && (
                 <div className="flex items-center gap-2">
@@ -320,8 +488,18 @@ export const AssistantPage: React.FC<AssistantPageProps> = ({ onReminderSaved })
                 </div>
               )}
             </div>
+
             {pendingReminder.description && (
               <p className="text-lg text-stone-600 font-medium mt-1">{pendingReminder.description}</p>
+            )}
+
+            {/* Elder Medical Reassurance Note */}
+            {pendingReminder.category === 'medicine' && (
+              <p className="text-xs text-stone-500 font-medium border-t border-stone-100 pt-2">
+                {language === 'ml'
+                  ? '* ഡോക്ടറുടെ കുറിപ്പടി പ്രകാരം മാത്രം മരുന്ന് കഴിക്കുക.'
+                  : '* Please always follow the official prescription and dosage prescribed by your doctor.'}
+              </p>
             )}
           </div>
 
@@ -348,52 +526,21 @@ export const AssistantPage: React.FC<AssistantPageProps> = ({ onReminderSaved })
         </Card>
       )}
 
-      {/* Response Card with Large Spoken Reply & Text-to-Speech button */}
+      {/* Spoken Response Card if conversational */}
       {lastResponse && !pendingReminder && (
-        <Card className="flex flex-col gap-5 bg-white border-2 border-stone-300 shadow-md">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-emerald-800 font-black text-xl">
-              <Sparkles className="w-6 h-6" />
-              <span>
-                {language === 'ml' ? 'കൂടെയുടെ മറുപടി:' : 'Koode says:'}
-              </span>
-            </div>
-            {isTtsSupported && (
-              <button
-                onClick={() => {
-                  triggerHapticFeedback(30);
-                  speak(lastResponse.spoken_response, language);
-                }}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-2xl border-2 border-emerald-700 bg-emerald-50 hover:bg-emerald-100 text-emerald-950 min-h-[48px] font-black text-base cursor-pointer active:scale-95"
-                aria-label="Read response aloud"
-              >
-                <Volume2 className="w-5 h-5 text-emerald-800" strokeWidth={2.5} />
-                <span>{language === 'ml' ? 'കേൾക്കുക' : 'Listen Aloud'}</span>
-              </button>
-            )}
+        <Card className="bg-white border-2 border-stone-200 p-6 sm:p-8 flex flex-col gap-4 shadow-sm">
+          <div className="flex items-center gap-2 text-emerald-800 font-black text-xl">
+            <Sparkles className="w-6 h-6" />
+            <span>Koode AI</span>
           </div>
-
-          <p className="text-2xl sm:text-3xl text-emerald-950 font-bold leading-relaxed">
+          <p className="text-2xl text-emerald-950 font-bold leading-relaxed">
             {lastResponse.spoken_response}
           </p>
-
           {lastResponse.clarification_prompt && (
-            <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-5 flex items-start gap-3.5">
-              <HelpCircle className="w-7 h-7 text-amber-700 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="font-black text-amber-950 text-lg">
-                  {t('assistantClarificationNeeded')}
-                </p>
-                <p className="text-amber-900 text-xl font-semibold mt-1">
-                  {lastResponse.clarification_prompt}
-                </p>
-              </div>
-            </div>
+            <p className="text-xl text-amber-900 font-black bg-amber-50 p-4 rounded-2xl border border-amber-300">
+              {lastResponse.clarification_prompt}
+            </p>
           )}
-
-          <div className="pt-3 border-t border-stone-200 text-sm text-stone-500 font-medium flex items-center justify-between">
-            <span>Powered by open-weight model: {lastResponse.model_used}</span>
-          </div>
         </Card>
       )}
     </div>

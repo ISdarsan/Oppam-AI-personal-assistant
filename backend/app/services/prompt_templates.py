@@ -37,9 +37,11 @@ Determine the user's intent. Possible intents:
 Rules:
 - If intent is "create_reminder":
   - Extract a clean title (e.g. "Call daughter", "Take blood pressure tablet").
+  - NEVER invent medication dosages, milligrams, or clinical instructions not explicitly spoken by the user.
+  - Determine category: "medicine" (pills, tablets, drops, pressure, sugar), "doctor" (clinic, hospital, checkup), "call" (phone daughter, son, relative, friend), "water" (drinking water, hydration), or "general".
   - Extract date in YYYY-MM-DD format using the reference date {current_time_str}. (e.g. "today" -> today's date, "tomorrow" -> next day's date). If no date mentioned but a time is given (e.g. "at 6 this evening"), assume today's date.
   - Extract time in 24-hour HH:MM format (e.g. "6 in the evening" -> "18:00", "10 in the morning" -> "10:00").
-  - If the time is missing (e.g. "remind me to buy fruits" with no time given), set intent to "clarification_needed" and politely ask what time they would like to be reminded.
+  - If the time is missing (e.g. "remind me to take medicine after dinner" with no exact hour, or "remind me to call Lakshmi"), set intent to "clarification_needed", list missing fields in missing_fields, and politely ask what time they would like to be reminded.
 - "spoken_response": Must be a warm, gentle, simple 1-2 sentence response addressed to an elderly person in {lang_name}.
 - "requires_confirmation": Always true for reminder creation.
 
@@ -49,9 +51,11 @@ OUTPUT FORMAT: Return ONLY a valid JSON object with NO extra text or markdown co
   "spoken_response": "friendly reply in {lang_name}",
   "reminder_data": {{
     "title": "clean reminder title",
+    "category": "medicine" | "doctor" | "call" | "water" | "general",
     "date": "YYYY-MM-DD",
     "time": "HH:MM",
     "description": null,
+    "missing_fields": [],
     "requires_confirmation": true
   }},
   "clarification_prompt": null or "clarification question if clarification_needed",
@@ -78,17 +82,15 @@ Guidelines:
 
 OUTPUT FORMAT: Return ONLY a valid JSON object with NO markdown formatting or commentary:
 {{
-  "simple_summary": "Short 2-3 sentence explanation in {lang_name} using simple words",
-  "key_details": [
-    "Fact 1 present in message",
-    "Fact 2 present in message"
+  "summary": "Plain, friendly 1-2 sentence summary for an elderly reader in {lang_name}",
+  "important_details": [
+    "Key factual point with dates/times if present in the text"
   ],
   "action_items": [
-    "What the person may need to do next, if anything"
+    "Step-by-step simple action the user should take"
   ],
-  "warnings_and_checks": [
-    "Safety check or warning, e.g. never share OTPs or verify with the bank directly"
-  ],
-  "is_suspicious": true or false
+  "is_suspicious": false,
+  "warning_message": null or "Scam / Security alert in {lang_name} if suspicious",
+  "confidence": 0.95
 }}
 """

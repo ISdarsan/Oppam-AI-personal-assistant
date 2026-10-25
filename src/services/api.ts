@@ -1,4 +1,11 @@
-import { AssistantResponse, ExplainResponse, HealthStatus, Language } from '../types';
+import {
+  AssistantResponse,
+  ExplainResponse,
+  HealthStatus,
+  Language,
+  SpeechTranscribeResponse,
+  SpeechStatusResponse,
+} from '../types';
 
 export class ApiError extends Error {
   code: string;
@@ -11,6 +18,15 @@ export class ApiError extends Error {
     this.suggestion = suggestion;
   }
 }
+
+const SARVAM_LANG_MAP: Record<string, string> = {
+  ml: 'ml-IN',
+  en: 'en-IN',
+  hi: 'hi-IN',
+  ta: 'ta-IN',
+  te: 'te-IN',
+  kn: 'kn-IN',
+};
 
 export const api = {
   async getHealth(): Promise<HealthStatus> {
@@ -27,8 +43,69 @@ export const api = {
         model_available: false,
         configured_model: 'gemma2:2b',
         available_models: [],
+        sarvam_configured: false,
+        sarvam_model: 'saaras:v4',
         message: e instanceof Error ? e.message : 'Cannot reach backend service.',
       };
+    }
+  },
+
+  async getSpeechStatus(): Promise<SpeechStatusResponse> {
+    try {
+      const res = await fetch('/api/speech/status');
+      if (!res.ok) {
+        throw new Error(`Speech status check returned HTTP ${res.status}`);
+      }
+      return await res.json();
+    } catch {
+      return {
+        configured: false,
+        model: 'saaras:v4',
+        provider: 'sarvam',
+        message: 'Could not connect to backend speech service.',
+      };
+    }
+  },
+
+  async transcribeAudio(
+    audioBlob: Blob,
+    language: Language,
+    filename = 'recording.webm'
+  ): Promise<SpeechTranscribeResponse> {
+    const formData = new FormData();
+    formData.append('file', audioBlob, filename);
+    const targetLang = SARVAM_LANG_MAP[language] || (language === 'ml' ? 'ml-IN' : 'en-IN');
+    formData.append('language', targetLang);
+
+    try {
+      const res = await fetch('/api/speech/transcribe', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!res.ok) {
+        let errData;
+        try {
+          errData = await res.json();
+        } catch {
+          errData = { detail: { message: `Audio transcription failed with HTTP ${res.status}` } };
+        }
+        const detail = errData.detail || {};
+        throw new ApiError(
+          detail.message || 'Speech transcription failed.',
+          detail.code || 'TRANSCRIPTION_FAILED',
+          detail.suggestion
+        );
+      }
+
+      return await res.json();
+    } catch (err) {
+      if (err instanceof ApiError) throw err;
+      throw new ApiError(
+        'Cannot connect to Koode speech service. Ensure backend is running.',
+        'SPEECH_CONNECTION_ERROR',
+        'Verify backend is running on port 8000.'
+      );
     }
   },
 
@@ -99,7 +176,7 @@ export const api = {
       throw new ApiError(
         'Cannot connect to Koode AI service.',
         'CONNECTION_ERROR',
-        'Verify backend server status.'
+        'Check backend connection.'
       );
     }
   },

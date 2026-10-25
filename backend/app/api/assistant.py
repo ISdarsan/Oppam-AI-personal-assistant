@@ -44,9 +44,18 @@ async def interpret_assistant_request(request: AssistantInterpretRequest):
         title = reminder_data_raw.get("title") or "Reminder"
         date_val = reminder_data_raw.get("date")
         time_val = reminder_data_raw.get("time")
+        category_val = reminder_data_raw.get("category") or "general"
+        if category_val not in ["medicine", "doctor", "call", "water", "general"]:
+            category_val = "general"
 
-        # If date or time is missing or incomplete, do not guess
+        missing = []
         if not time_val:
+            missing.append("time")
+        if not date_val:
+            missing.append("date")
+
+        # If time is missing or incomplete, do not guess
+        if "time" in missing:
             intent = "clarification_needed"
             clarification_prompt = (
                 "ഏത് സമയത്താണ് ഓർമ്മിപ്പിക്കേണ്ടത് എന്ന് പറയാമോ?"
@@ -57,9 +66,11 @@ async def interpret_assistant_request(request: AssistantInterpretRequest):
         else:
             parsed_reminder = ReminderIntentData(
                 title=title,
+                category=category_val,
                 date=date_val,
                 time=time_val,
                 description=reminder_data_raw.get("description"),
+                missing_fields=missing,
                 requires_confirmation=True
             )
 

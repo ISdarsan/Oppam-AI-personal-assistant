@@ -1,5 +1,22 @@
 import os
+from pathlib import Path
+from typing import Optional
+from dotenv import load_dotenv
 from pydantic import BaseModel
+
+# Automatically discover and load .env from project root or backend directory
+current_dir = Path(__file__).resolve().parent
+# current_dir is backend/app/core
+# parent 1: backend/app
+# parent 2: backend
+# parent 3: project root
+project_root = current_dir.parent.parent.parent
+backend_dir = current_dir.parent.parent
+
+for candidate in [project_root / ".env", backend_dir / ".env", Path.cwd() / ".env"]:
+    if candidate.exists():
+        load_dotenv(dotenv_path=candidate, override=True)
+        break
 
 class Settings(BaseModel):
     APP_NAME: str = "Koode AI Backend"
@@ -10,6 +27,17 @@ class Settings(BaseModel):
     OLLAMA_BASE_URL: str = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
     OLLAMA_MODEL: str = os.getenv("OLLAMA_MODEL", "gemma2:2b")
     OLLAMA_TIMEOUT_SECONDS: float = float(os.getenv("OLLAMA_TIMEOUT_SECONDS", "30.0"))
+    
+    # Sarvam AI Speech-to-Text configuration
+    SARVAM_API_KEY: Optional[str] = os.getenv("SARVAM_API_KEY")
+    SARVAM_BASE_URL: str = os.getenv("SARVAM_BASE_URL", "https://api.sarvam.ai")
+    SARVAM_MODEL: str = os.getenv("SARVAM_MODEL", "saaras:v4")
+    SARVAM_DEFAULT_MODE: str = os.getenv("SARVAM_MODE", "transcribe")
+    SARVAM_TIMEOUT_SECONDS: float = float(os.getenv("SARVAM_TIMEOUT_SECONDS", "25.0"))
+    
+    # Audio upload limits
+    MAX_AUDIO_SIZE_BYTES: int = int(os.getenv("MAX_AUDIO_SIZE_BYTES", str(10 * 1024 * 1024)))  # 10 MB limit
+    MAX_AUDIO_DURATION_SECONDS: float = float(os.getenv("MAX_AUDIO_DURATION_SECONDS", "30.0"))  # 30s limit for synchronous STT
     
     # Input bounds
     MAX_TEXT_INPUT_LENGTH: int = 5000
