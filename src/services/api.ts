@@ -63,7 +63,7 @@ export const api = {
     } catch (err) {
       if (err instanceof ApiError) throw err;
       throw new ApiError(
-        'Cannot connect to Sahaaya AI service. Ensure backend is running.',
+        'Cannot connect to Koode AI service. Ensure backend is running.',
         'CONNECTION_ERROR',
         'Run uvicorn backend.app.main:app --reload'
       );
@@ -97,7 +97,7 @@ export const api = {
     } catch (err) {
       if (err instanceof ApiError) throw err;
       throw new ApiError(
-        'Cannot connect to Sahaaya AI service.',
+        'Cannot connect to Koode AI service.',
         'CONNECTION_ERROR',
         'Verify backend server status.'
       );

@@ -70,7 +70,7 @@ async def test_assistant_ollama_unavailable():
     with patch.object(ollama_client, "generate_json", new=AsyncMock(side_effect=OllamaServiceError("Connection refused"))):
         async with AsyncClient(transport=transport, base_url="http://test") as client:
             res = await client.post("/api/assistant/interpret", json={
-                "text": "Hello Sahaaya",
+                "text": "Hello Koode",
                 "language": "en"
             })
             assert res.status_code == 503

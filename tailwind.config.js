@@ -7,6 +7,24 @@ export default {
   theme: {
     extend: {
       colors: {
+        koode: {
+          bg: '#FBF9F5',
+          cream: '#F3EFE6',
+          card: '#FFFFFF',
+          border: '#D8E2DC',
+          primary: '#2D6A4F',
+          primaryHover: '#1B4332',
+          accent: '#52B788',
+          accentLight: '#E8F5E9',
+          text: '#1E2D24',
+          muted: '#4A5D4E',
+          alert: '#BC4749',
+          alertBg: '#FDF0ED',
+          warning: '#D97706',
+          warningBg: '#FEF3C7',
+          calm: '#3D5A80',
+          calmBg: '#E0FBFC'
+        },
         sahaaya: {
           bg: '#FBF9F5',
           cream: '#F3EFE6',

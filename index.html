@@ -18,14 +18,17 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manjari:wght@400;700&family=Noto+Sans+Malayalam:wght@400;600;700&display=swap" rel="stylesheet">
   </head>
-  <body class="bg-sahaaya-bg text-sahaaya-text font-sans antialiased min-h-screen selection:bg-sahaaya-accent selection:text-white">
+  <body class="bg-[#FBF9F5] text-emerald-950 font-sans antialiased min-h-screen selection:bg-emerald-800 selection:text-white">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <script>
-      // Register PWA Service Worker
+      // Register PWA Service Worker with auto-update
       if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').catch((err) => {
+          navigator.serviceWorker.register('/sw.js').then((reg) => {
+            // Check for service worker updates immediately
+            reg.update();
+          }).catch((err) => {
             console.log('PWA ServiceWorker registration failed:', err);
           });
         });

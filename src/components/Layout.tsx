@@ -99,7 +99,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentPage, onNavigat
     <div className="min-h-screen bg-[#FBF9F5] flex flex-col font-sans pb-28 text-emerald-950">
       {/* Top Header */}
       <header className="sticky top-0 z-30 bg-white/98 backdrop-blur-md border-b-2 border-emerald-900/15 px-3 py-2.5 sm:px-6 shadow-sm">
-        <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
+        <div className="max-w-5xl mx-auto flex items-center justify-between gap-3">
           {/* Logo & Name */}
           <button
             onClick={() => {
@@ -178,7 +178,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentPage, onNavigat
           aria-live="assertive"
           className="bg-rose-50 border-b-4 border-rose-600 text-emerald-950 px-4 py-3.5 shadow-lg animate-slideDown"
         >
-          <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
+          <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
             <div className="flex items-center gap-3.5">
               <div className="w-12 h-12 rounded-2xl bg-rose-600 text-white flex items-center justify-center flex-shrink-0 animate-pulse shadow-md">
                 <BellRing className="w-7 h-7" />
@@ -213,7 +213,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentPage, onNavigat
       )}
 
       {/* Main Content Area with generous padding */}
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {children}
       </main>
 

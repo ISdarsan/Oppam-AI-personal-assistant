@@ -1,5 +1,5 @@
 """
-Prompt templates for Sahaaya AI.
+Prompt templates for Koode AI.
 Engineered for open-weight models (e.g. Gemma 2:2b) to output strict, well-structured JSON.
 Supports multilingual global languages.
 """
@@ -19,7 +19,7 @@ LANG_NAME_MAP = {
 
 def get_assistant_interpret_prompt(user_text: str, current_time_str: str, language: str) -> str:
     lang_name = LANG_NAME_MAP.get(language, "English")
-    return f"""You are Sahaaya AI, a warm, reassuring, highly reliable digital companion for elderly users.
+    return f"""You are Koode AI, a warm, reassuring, highly reliable digital companion for elderly users.
 Today's local reference time is: {current_time_str}.
 User's preferred response language is: {lang_name}.
 
@@ -61,7 +61,7 @@ OUTPUT FORMAT: Return ONLY a valid JSON object with NO extra text or markdown co
 
 def get_message_explain_prompt(message_text: str, language: str) -> str:
     lang_name = LANG_NAME_MAP.get(language, "English")
-    return f"""You are Sahaaya AI, an expert, caring assistant helping older adults understand confusing messages, notices, or SMS.
+    return f"""You are Koode AI, an expert, caring assistant helping older adults understand confusing messages, notices, or SMS.
 User's preferred response language is: {lang_name}.
 
 Carefully analyze this message:
