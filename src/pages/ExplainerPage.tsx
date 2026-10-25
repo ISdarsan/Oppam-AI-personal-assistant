@@ -14,6 +14,7 @@ import { Card } from '../components/ui/Card';
 import { api, ApiError } from '../services/api';
 import { ExplainResponse } from '../types';
 import { useSpeechSynthesis } from '../hooks/useSpeechSynthesis';
+import { triggerHapticFeedback } from '../utils/communication';
 
 export const ExplainerPage: React.FC = () => {
   const { language, settings, t } = useLanguage();
@@ -29,6 +30,7 @@ export const ExplainerPage: React.FC = () => {
     const text = (textToExplain || inputText).trim();
     if (!text) return;
 
+    triggerHapticFeedback(50);
     setIsAnalyzing(true);
     setErrorMessage(null);
     setResult(null);
@@ -76,19 +78,19 @@ export const ExplainerPage: React.FC = () => {
         ];
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 sm:gap-8">
       {/* Title */}
       <div>
-        <h2 className="text-3xl font-black text-sahaaya-text tracking-tight">
+        <h2 className="text-3xl sm:text-4xl font-black text-emerald-950 tracking-tight">
           {t('explainerTitle')}
         </h2>
-        <p className="text-lg text-sahaaya-muted mt-1">{t('explainerSubtitle')}</p>
+        <p className="text-lg sm:text-xl text-emerald-900/80 mt-1 font-medium">{t('explainerSubtitle')}</p>
       </div>
 
       {/* Input Card */}
-      <Card className="flex flex-col gap-5 p-6 sm:p-8 bg-white">
-        <div className="flex flex-col gap-2">
-          <label htmlFor="message-input" className="text-lg font-bold text-sahaaya-text">
+      <Card className="flex flex-col gap-6 p-6 sm:p-8 bg-white border-2 border-stone-200">
+        <div className="flex flex-col gap-2.5">
+          <label htmlFor="message-input" className="text-xl font-black text-emerald-950">
             {language === 'ml' ? 'സന്ദേശം ഇവിടെ ചേർക്കുക:' : 'Paste message text:'}
           </label>
           <textarea
@@ -97,18 +99,19 @@ export const ExplainerPage: React.FC = () => {
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             placeholder={t('explainerPlaceholder')}
-            className="w-full p-4 text-lg rounded-2xl border-2 border-sahaaya-border focus:border-sahaaya-primary focus:outline-none focus:ring-4 focus:ring-sahaaya-primary/20 bg-white text-sahaaya-text resize-y min-h-[140px]"
+            className="w-full p-5 text-xl rounded-2xl border-2 border-stone-300 focus:border-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-700/20 bg-white text-emerald-950 placeholder:text-stone-400 resize-y min-h-[160px] font-medium leading-relaxed"
           />
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <button
             onClick={() => {
+              triggerHapticFeedback(30);
               setInputText('');
               setResult(null);
               setErrorMessage(null);
             }}
-            className="text-base text-sahaaya-muted hover:text-sahaaya-text underline min-h-[44px]"
+            className="text-lg font-bold text-stone-600 hover:text-stone-900 underline min-h-[48px] cursor-pointer"
           >
             {language === 'ml' ? 'എല്ലാം മായ്ക്കുക' : 'Clear text'}
           </button>
@@ -119,26 +122,27 @@ export const ExplainerPage: React.FC = () => {
             disabled={!inputText.trim() || isAnalyzing}
             loading={isAnalyzing}
             icon={<Sparkles className="w-6 h-6" />}
-            className="font-bold shadow-md"
+            className="font-black text-xl shadow-md"
           >
             {isAnalyzing ? t('explainerAnalyzing') : t('explainerButton')}
           </Button>
         </div>
 
         {/* Quick Sample Messages */}
-        <div className="pt-4 border-t border-sahaaya-border">
-          <p className="text-sm font-bold text-sahaaya-muted mb-2">
+        <div className="pt-5 border-t-2 border-stone-200">
+          <p className="text-base font-black text-emerald-950 mb-3">
             {language === 'ml' ? 'ഉദാഹരണങ്ങൾ പരീക്ഷിക്കാം (തൊടുക):' : 'Try sample messages (Tap to load):'}
           </p>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-3">
             {sampleMessages.map((sample, idx) => (
               <button
                 key={idx}
                 onClick={() => {
+                  triggerHapticFeedback(30);
                   setInputText(sample.text);
                   handleExplain(sample.text);
                 }}
-                className="text-left text-sm bg-sahaaya-cream/70 hover:bg-sahaaya-cream border border-sahaaya-border hover:border-sahaaya-primary px-3 py-2 rounded-xl text-sahaaya-text font-medium min-h-[44px]"
+                className="text-left text-base sm:text-lg bg-stone-50 hover:bg-emerald-50 border-2 border-stone-300 hover:border-emerald-700 px-4 py-2.5 rounded-2xl text-emerald-950 font-bold min-h-[50px] transition-all shadow-xs cursor-pointer active:scale-98"
               >
                 {sample.title}
               </button>
@@ -151,78 +155,81 @@ export const ExplainerPage: React.FC = () => {
       {errorMessage && (
         <div
           role="alert"
-          className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-5 flex items-start gap-4 text-amber-950"
+          className="bg-amber-50 border-2 border-amber-400 rounded-3xl p-6 flex items-start gap-4 text-amber-950 shadow-sm"
         >
-          <AlertTriangle className="w-6 h-6 text-amber-700 flex-shrink-0 mt-0.5" />
+          <AlertTriangle className="w-7 h-7 text-amber-700 flex-shrink-0 mt-0.5" />
           <div>
-            <h4 className="font-bold text-lg">
+            <h4 className="font-black text-xl">
               {language === 'ml' ? 'ശ്രദ്ധിക്കുക' : 'Notice'}
             </h4>
-            <p className="text-base mt-1">{errorMessage}</p>
+            <p className="text-lg mt-1 font-medium">{errorMessage}</p>
           </div>
         </div>
       )}
 
       {/* Explanation Result Card */}
       {result && (
-        <div className="flex flex-col gap-5 animate-slideDown">
+        <div className="flex flex-col gap-6 animate-slideDown">
           {/* Suspicious Warning Alert if flagged */}
           {result.is_suspicious && (
             <div
               role="alert"
-              className="bg-rose-50 border-2 border-sahaaya-alert rounded-3xl p-6 flex items-start gap-4 shadow-sm"
+              className="bg-rose-50 border-2 border-rose-500 rounded-3xl p-6 sm:p-7 flex items-start gap-4 shadow-md"
             >
-              <div className="w-12 h-12 rounded-2xl bg-rose-100 text-sahaaya-alert flex items-center justify-center flex-shrink-0">
-                <ShieldAlert className="w-8 h-8" />
+              <div className="w-14 h-14 rounded-2xl bg-rose-100 text-rose-700 flex items-center justify-center flex-shrink-0 border-2 border-rose-300">
+                <ShieldAlert className="w-9 h-9" strokeWidth={2.5} />
               </div>
               <div>
-                <h3 className="text-2xl font-black text-rose-950">
+                <h3 className="text-2xl sm:text-3xl font-black text-rose-950">
                   {language === 'ml' ? 'സുരക്ഷാ മുന്നറിയിപ്പ്!' : 'Security Warning!'}
                 </h3>
-                <p className="text-lg text-rose-900 mt-1 font-semibold">
+                <p className="text-lg sm:text-xl text-rose-900 mt-1.5 font-bold leading-relaxed">
                   {t('explainerSuspiciousAlert')}
                 </p>
               </div>
             </div>
           )}
 
-          <Card className="flex flex-col gap-6 p-6 sm:p-8 bg-white border-2 border-sahaaya-border">
+          <Card className="flex flex-col gap-7 p-6 sm:p-9 bg-white border-2 border-stone-300 shadow-md">
             {/* 1. In Simple Words */}
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3.5">
               <div className="flex items-center justify-between">
-                <h3 className="text-2xl font-black text-sahaaya-primary flex items-center gap-2">
-                  <Sparkles className="w-6 h-6 text-sahaaya-accent" />
+                <h3 className="text-2xl sm:text-3xl font-black text-emerald-900 flex items-center gap-2.5">
+                  <Sparkles className="w-7 h-7 text-emerald-700" />
                   <span>{t('explainerSummaryTitle')}</span>
                 </h3>
                 {isTtsSupported && (
                   <button
-                    onClick={() => speak(result.simple_summary, language)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-sahaaya-border text-sahaaya-primary hover:bg-sahaaya-cream min-h-[44px] font-semibold text-sm"
+                    onClick={() => {
+                      triggerHapticFeedback(30);
+                      speak(result.simple_summary, language);
+                    }}
+                    className="flex items-center gap-2 px-4 py-2 rounded-2xl border-2 border-emerald-700 bg-emerald-50 hover:bg-emerald-100 text-emerald-950 min-h-[48px] font-black text-base cursor-pointer active:scale-95"
                     aria-label="Read summary aloud"
                   >
-                    <Volume2 className="w-5 h-5" />
+                    <Volume2 className="w-5 h-5 text-emerald-800" strokeWidth={2.5} />
                     <span>{language === 'ml' ? 'കേൾക്കുക' : 'Listen'}</span>
                   </button>
                 )}
               </div>
-              <p className="text-xl sm:text-2xl text-sahaaya-text font-medium leading-relaxed bg-sahaaya-cream/40 p-5 rounded-2xl border border-sahaaya-border">
+              <p className="text-2xl sm:text-3xl text-emerald-950 font-bold leading-relaxed bg-emerald-50/70 p-6 rounded-3xl border-2 border-emerald-200">
                 {result.simple_summary}
               </p>
             </div>
 
             {/* 2. Key Details */}
             {result.key_details.length > 0 && (
-              <div className="flex flex-col gap-3 pt-4 border-t border-sahaaya-border">
-                <h4 className="text-xl font-bold text-sahaaya-text">
+              <div className="flex flex-col gap-3.5 pt-5 border-t-2 border-stone-200">
+                <h4 className="text-2xl font-black text-emerald-950">
                   {t('explainerDetailsTitle')}
                 </h4>
-                <ul className="space-y-2">
+                <ul className="space-y-3">
                   {result.key_details.map((detail, idx) => (
                     <li
                       key={idx}
-                      className="flex items-start gap-3 text-lg text-sahaaya-text font-medium"
+                      className="flex items-start gap-3.5 text-xl text-emerald-950 font-bold"
                     >
-                      <CheckCircle className="w-5 h-5 text-sahaaya-primary flex-shrink-0 mt-1" />
+                      <CheckCircle className="w-6 h-6 text-emerald-700 flex-shrink-0 mt-0.5" strokeWidth={2.5} />
                       <span>{detail}</span>
                     </li>
                   ))}
@@ -232,17 +239,17 @@ export const ExplainerPage: React.FC = () => {
 
             {/* 3. What You May Need To Do */}
             {result.action_items.length > 0 && (
-              <div className="flex flex-col gap-3 pt-4 border-t border-sahaaya-border">
-                <h4 className="text-xl font-bold text-sahaaya-text">
+              <div className="flex flex-col gap-3.5 pt-5 border-t-2 border-stone-200">
+                <h4 className="text-2xl font-black text-emerald-950">
                   {t('explainerActionsTitle')}
                 </h4>
-                <ul className="space-y-2">
+                <ul className="space-y-3">
                   {result.action_items.map((action, idx) => (
                     <li
                       key={idx}
-                      className="flex items-start gap-3 text-lg text-sahaaya-text font-medium"
+                      className="flex items-start gap-3.5 text-xl text-emerald-950 font-bold"
                     >
-                      <span className="w-6 h-6 rounded-full bg-sahaaya-cream text-sahaaya-primary font-bold text-sm flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-900 border-2 border-emerald-300 font-black text-base flex items-center justify-center flex-shrink-0 mt-0.5">
                         {idx + 1}
                       </span>
                       <span>{action}</span>
@@ -254,16 +261,16 @@ export const ExplainerPage: React.FC = () => {
 
             {/* 4. Things to Check & Safety Warnings */}
             {result.warnings_and_checks.length > 0 && (
-              <div className="flex flex-col gap-3 pt-4 border-t border-sahaaya-border bg-amber-50/50 p-5 rounded-2xl border border-amber-200">
-                <h4 className="text-xl font-bold text-amber-950 flex items-center gap-2">
-                  <AlertTriangle className="w-5 h-5 text-amber-700" />
+              <div className="flex flex-col gap-3.5 pt-5 border-t-2 border-stone-200 bg-amber-50/80 p-6 rounded-3xl border-2 border-amber-300">
+                <h4 className="text-2xl font-black text-amber-950 flex items-center gap-2.5">
+                  <AlertTriangle className="w-7 h-7 text-amber-700" strokeWidth={2.5} />
                   <span>{t('explainerWarningsTitle')}</span>
                 </h4>
-                <ul className="space-y-2">
+                <ul className="space-y-2.5">
                   {result.warnings_and_checks.map((warning, idx) => (
                     <li
                       key={idx}
-                      className="text-lg text-amber-900 font-semibold"
+                      className="text-xl text-amber-950 font-bold"
                     >
                       • {warning}
                     </li>
@@ -273,23 +280,26 @@ export const ExplainerPage: React.FC = () => {
             )}
 
             {/* Original Text Toggle */}
-            <div className="pt-4 border-t border-sahaaya-border">
+            <div className="pt-5 border-t-2 border-stone-200">
               <button
-                onClick={() => setShowOriginal(!showOriginal)}
-                className="flex items-center justify-between w-full p-3 rounded-xl hover:bg-sahaaya-cream text-sahaaya-muted hover:text-sahaaya-text font-semibold text-base min-h-[48px]"
+                onClick={() => {
+                  triggerHapticFeedback(30);
+                  setShowOriginal(!showOriginal);
+                }}
+                className="flex items-center justify-between w-full p-4 rounded-2xl hover:bg-stone-100 text-stone-700 hover:text-stone-900 font-black text-lg min-h-[52px] cursor-pointer"
               >
                 <span>{t('explainerOriginalText')}</span>
-                {showOriginal ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                {showOriginal ? <ChevronUp className="w-6 h-6" /> : <ChevronDown className="w-6 h-6" />}
               </button>
               {showOriginal && (
-                <div className="mt-2 p-4 bg-gray-50 rounded-xl border border-gray-200 text-base font-mono whitespace-pre-wrap text-gray-700">
+                <div className="mt-2 p-5 bg-stone-50 rounded-2xl border-2 border-stone-200 text-lg font-mono whitespace-pre-wrap text-stone-800 leading-relaxed">
                   {inputText}
                 </div>
               )}
             </div>
 
             {/* Medical / Verification Disclaimer */}
-            <div className="pt-2 text-xs sm:text-sm text-sahaaya-muted italic border-t border-sahaaya-border/50">
+            <div className="pt-3 text-base text-stone-600 italic border-t-2 border-stone-200 font-medium">
               {t('explainerDisclaimer')}
             </div>
           </Card>

@@ -10,6 +10,7 @@ import {
   Star,
   MessageCircle,
   ShieldAlert,
+  Send,
 } from 'lucide-react';
 import { useLanguage } from '../i18n/LanguageContext';
 import { Button } from '../components/ui/Button';
@@ -130,37 +131,38 @@ export const ContactsPage: React.FC = () => {
 
   const handleTogglePrimary = (contact: Contact) => {
     triggerHapticFeedback(50);
-    // Unset primary on others if setting this one
     const updated = { ...contact, isPrimary: !contact.isPrimary };
     storage.updateContact(updated);
     loadContacts();
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 sm:gap-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-black text-sahaaya-text tracking-tight">
+          <h2 className="text-3xl sm:text-4xl font-black text-emerald-950 tracking-tight">
             {t('contactsTitle')}
           </h2>
-          <p className="text-lg text-sahaaya-muted mt-1">{t('contactsSubtitle')}</p>
+          <p className="text-lg sm:text-xl text-emerald-900/80 mt-1 font-medium">{t('contactsSubtitle')}</p>
         </div>
         <Button
           size="lg"
           onClick={openAddModal}
-          icon={<Plus className="w-6 h-6" />}
-          className="shadow-sm flex-shrink-0"
+          icon={<Plus className="w-6 h-6" strokeWidth={3} />}
+          className="shadow-md flex-shrink-0 text-xl font-black"
         >
           {t('contactsAddNew')}
         </Button>
       </div>
 
       {/* Emergency Guidance Notice */}
-      <div className="bg-emerald-50 border-2 border-emerald-200/80 rounded-2xl p-4 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <ShieldAlert className="w-6 h-6 text-emerald-800 flex-shrink-0" />
-          <p className="text-base text-emerald-950 font-medium">
+      <div className="bg-emerald-50 border-2 border-emerald-300 rounded-3xl p-5 sm:p-6 flex items-center justify-between gap-4 shadow-xs">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-800 text-white flex items-center justify-center flex-shrink-0">
+            <ShieldAlert className="w-7 h-7" strokeWidth={2.5} />
+          </div>
+          <p className="text-base sm:text-lg text-emerald-950 font-bold leading-relaxed">
             {language === 'ml'
               ? 'സ്റ്റാർ (★) അടയാളമുള്ള ബന്ധുവിലേക്ക് ആയിരിക്കും അടിയന്തിര SOS കോൾ പോവുക.'
               : 'The contact marked with a star (★) will be called first during an Emergency SOS.'}
@@ -170,10 +172,12 @@ export const ContactsPage: React.FC = () => {
 
       {/* Contacts List */}
       {contacts.length === 0 ? (
-        <Card className="py-12 text-center flex flex-col items-center gap-4 bg-white">
-          <Users className="w-12 h-12 text-sahaaya-muted/60" />
-          <h3 className="text-2xl font-bold text-sahaaya-text">{t('contactsEmpty')}</h3>
-          <Button size="lg" onClick={openAddModal} icon={<Plus className="w-5 h-5" />}>
+        <Card className="py-14 text-center flex flex-col items-center gap-4 bg-white border-2 border-stone-200">
+          <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center">
+            <Users className="w-9 h-9 text-emerald-800" strokeWidth={2.5} />
+          </div>
+          <h3 className="text-2xl sm:text-3xl font-black text-emerald-950">{t('contactsEmpty')}</h3>
+          <Button size="lg" onClick={openAddModal} icon={<Plus className="w-6 h-6" strokeWidth={3} />}>
             {t('contactsAddNew')}
           </Button>
         </Card>
@@ -185,61 +189,67 @@ export const ContactsPage: React.FC = () => {
             return (
               <Card
                 key={contact.id}
-                className={`p-6 bg-white border-2 transition-all ${
+                className={`p-6 sm:p-7 bg-white border-2 transition-all ${
                   contact.isPrimary
-                    ? 'border-emerald-500 shadow-md ring-2 ring-emerald-100'
-                    : 'border-sahaaya-border hover:border-sahaaya-primary/40'
+                    ? 'border-emerald-600 shadow-md ring-4 ring-emerald-100'
+                    : 'border-stone-300 hover:border-emerald-700/50 shadow-xs'
                 }`}
               >
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                   {/* Contact Information */}
-                  <div className="flex items-start gap-4">
-                    <div className="w-16 h-16 rounded-2xl bg-sahaaya-cream text-sahaaya-primary flex items-center justify-center font-black text-2xl flex-shrink-0 border-2 border-sahaaya-primary/20">
+                  <div className="flex items-start gap-4 sm:gap-5">
+                    <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-3xl bg-emerald-100 text-emerald-900 flex items-center justify-center font-black text-3xl sm:text-4xl flex-shrink-0 border-2 border-emerald-300 shadow-xs">
                       {contact.name.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <div className="flex items-center gap-2.5 flex-wrap">
-                        <h3 className="text-2xl sm:text-3xl font-black text-sahaaya-text">
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <h3 className="text-2xl sm:text-3xl font-black text-emerald-950">
                           {contact.name}
                         </h3>
-                        <span className="text-sm font-bold bg-emerald-100 text-emerald-900 px-3 py-1 rounded-full">
+                        <span className="text-base font-bold bg-emerald-100 text-emerald-950 border border-emerald-300 px-3.5 py-1 rounded-full">
                           {contact.relationship}
                         </span>
                         {contact.isPrimary && (
-                          <span className="text-xs font-black bg-amber-100 text-amber-900 border border-amber-300 px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                            <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-600" />
-                            {language === 'ml' ? 'പ്രധാന നമ്പർ (Primary)' : 'Primary Contact'}
+                          <span className="text-sm font-black bg-amber-100 text-amber-950 border-2 border-amber-400 px-3 py-1 rounded-full flex items-center gap-1.5 shadow-xs">
+                            <Star className="w-4 h-4 fill-amber-500 text-amber-600" />
+                            {language === 'ml' ? 'പ്രധാന നമ്പർ (Primary)' : 'Primary SOS Contact'}
                           </span>
                         )}
                       </div>
-                      <p className="text-xl sm:text-2xl font-extrabold text-sahaaya-primary mt-1 tracking-wide font-mono">
+                      <p className="text-2xl sm:text-3xl font-black text-emerald-800 mt-1.5 tracking-wider font-mono">
                         {contact.phone}
                       </p>
                       {contact.notes && (
-                        <p className="text-base text-sahaaya-muted mt-1">{contact.notes}</p>
+                        <p className="text-lg text-stone-600 mt-1 font-medium">{contact.notes}</p>
                       )}
                     </div>
                   </div>
 
-                  {/* Multi-Channel Quick Action Buttons (Call, WhatsApp, SMS) */}
-                  <div className="flex flex-wrap items-center gap-2.5 pt-3 lg:pt-0 border-t lg:border-t-0 border-sahaaya-border">
-                    {/* 1. Phone Call */}
+                  {/* Multi-Channel Quick Action Buttons (Call, WhatsApp, SMS Preview) */}
+                  <div className="flex flex-wrap items-center gap-3 pt-4 lg:pt-0 border-t-2 lg:border-t-0 border-stone-200">
+                    {/* 1. Direct Phone Call */}
                     <button
-                      onClick={() => makePhoneCall(contact.phone)}
-                      className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 bg-sahaaya-primary hover:bg-sahaaya-primaryHover text-white px-5 py-3.5 rounded-2xl font-bold text-base sm:text-lg min-h-[52px] shadow-sm transition-transform active:scale-95"
+                      onClick={() => {
+                        triggerHapticFeedback(80);
+                        makePhoneCall(contact.phone);
+                      }}
+                      className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2.5 bg-emerald-800 hover:bg-emerald-900 text-white px-6 py-4 rounded-2xl font-black text-lg sm:text-xl min-h-[56px] shadow-md transition-transform active:scale-95 cursor-pointer"
                       aria-label={`Call ${contact.name}`}
                     >
-                      <PhoneCall className="w-5 h-5" />
+                      <PhoneCall className="w-6 h-6" strokeWidth={2.5} />
                       <span>{t('contactsCallNow')}</span>
                     </button>
 
-                    {/* 2. WhatsApp Message */}
+                    {/* 2. Direct WhatsApp Chat */}
                     <button
-                      onClick={() => openWhatsAppMessage(contact.phone, preparedMsg)}
-                      className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#1EBE5D] text-white px-5 py-3.5 rounded-2xl font-bold text-base min-h-[52px] shadow-sm transition-transform active:scale-95"
+                      onClick={() => {
+                        triggerHapticFeedback(60);
+                        openWhatsAppMessage(contact.phone, preparedMsg);
+                      }}
+                      className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2.5 bg-[#25D366] hover:bg-[#1EBE5D] text-white px-6 py-4 rounded-2xl font-black text-lg sm:text-xl min-h-[56px] shadow-md transition-transform active:scale-95 cursor-pointer"
                       aria-label={`WhatsApp ${contact.name}`}
                     >
-                      <MessageCircle className="w-5 h-5 fill-white" />
+                      <MessageCircle className="w-6 h-6 fill-white" />
                       <span>{t('contactsWhatsApp')}</span>
                     </button>
 
@@ -249,21 +259,21 @@ export const ContactsPage: React.FC = () => {
                         triggerHapticFeedback(40);
                         setMessageTarget(contact);
                       }}
-                      className="inline-flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-700 text-white px-4 py-3.5 rounded-2xl font-bold text-base min-h-[52px] shadow-sm transition-transform active:scale-95"
+                      className="inline-flex items-center justify-center gap-2 bg-sky-700 hover:bg-sky-800 text-white px-5 py-4 rounded-2xl font-black text-lg min-h-[56px] shadow-md transition-transform active:scale-95 cursor-pointer"
                       aria-label={`Send help message to ${contact.name}`}
                     >
-                      <MessageSquare className="w-5 h-5" />
+                      <MessageSquare className="w-6 h-6" />
                       <span>{t('contactsSendMessage')}</span>
                     </button>
 
-                    {/* 4. Secondary actions (Star primary, Edit, Delete) */}
-                    <div className="flex items-center gap-1 ml-auto">
+                    {/* Secondary actions (Primary toggle, Edit, Delete) */}
+                    <div className="flex items-center gap-1.5 ml-auto">
                       <button
                         onClick={() => handleTogglePrimary(contact)}
-                        className={`p-3 rounded-xl min-h-[48px] min-w-[48px] flex items-center justify-center transition-colors ${
+                        className={`p-3 rounded-2xl min-h-[50px] min-w-[50px] flex items-center justify-center transition-colors cursor-pointer ${
                           contact.isPrimary
-                            ? 'text-amber-500 hover:bg-amber-50'
-                            : 'text-gray-400 hover:text-amber-500 hover:bg-amber-50'
+                            ? 'text-amber-500 bg-amber-50 hover:bg-amber-100'
+                            : 'text-stone-400 hover:text-amber-500 hover:bg-stone-100'
                         }`}
                         title={
                           contact.isPrimary
@@ -273,16 +283,16 @@ export const ContactsPage: React.FC = () => {
                         aria-label="Set as Primary Emergency Contact"
                       >
                         <Star
-                          className={`w-6 h-6 ${contact.isPrimary ? 'fill-amber-400 text-amber-500' : ''}`}
+                          className={`w-7 h-7 ${contact.isPrimary ? 'fill-amber-400 text-amber-500' : ''}`}
                         />
                       </button>
 
                       <button
                         onClick={() => openEditModal(contact)}
-                        className="p-3 rounded-xl text-sahaaya-muted hover:text-sahaaya-primary hover:bg-sahaaya-cream min-h-[48px] min-w-[48px] flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-sahaaya-primary"
+                        className="p-3 rounded-2xl text-stone-600 hover:text-emerald-900 hover:bg-emerald-50 min-h-[50px] min-w-[50px] flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-emerald-700/30 cursor-pointer"
                         aria-label="Edit contact"
                       >
-                        <Edit2 className="w-5 h-5" />
+                        <Edit2 className="w-6 h-6" />
                       </button>
 
                       <button
@@ -290,10 +300,10 @@ export const ContactsPage: React.FC = () => {
                           triggerHapticFeedback(50);
                           setContactToDelete(contact);
                         }}
-                        className="p-3 rounded-xl text-sahaaya-muted hover:text-sahaaya-alert hover:bg-rose-50 min-h-[48px] min-w-[48px] flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-sahaaya-alert"
+                        className="p-3 rounded-2xl text-stone-600 hover:text-rose-700 hover:bg-rose-50 min-h-[50px] min-w-[50px] flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-rose-500/30 cursor-pointer"
                         aria-label="Delete contact"
                       >
-                        <Trash2 className="w-5 h-5" />
+                        <Trash2 className="w-6 h-6" />
                       </button>
                     </div>
                   </div>
@@ -310,7 +320,7 @@ export const ContactsPage: React.FC = () => {
         onClose={closeModal}
         title={editingContact ? t('contactsEdit') : t('contactsAddNew')}
       >
-        <form onSubmit={handleSaveContact} className="flex flex-col gap-5">
+        <form onSubmit={handleSaveContact} className="flex flex-col gap-6">
           <Input
             label={t('contactsName')}
             placeholder={t('contactsNamePlaceholder')}
@@ -343,14 +353,14 @@ export const ContactsPage: React.FC = () => {
             onChange={(e) => setNotes(e.target.value)}
           />
 
-          <label className="flex items-center gap-3 p-3 bg-emerald-50 rounded-xl border border-emerald-200 cursor-pointer">
+          <label className="flex items-center gap-3.5 p-4 bg-emerald-50 rounded-2xl border-2 border-emerald-300 cursor-pointer">
             <input
               type="checkbox"
               checked={isPrimary}
               onChange={(e) => setIsPrimary(e.target.checked)}
-              className="w-6 h-6 text-sahaaya-primary rounded accent-sahaaya-primary cursor-pointer"
+              className="w-7 h-7 text-emerald-800 rounded-lg accent-emerald-800 cursor-pointer"
             />
-            <span className="text-base font-bold text-emerald-950">
+            <span className="text-lg font-black text-emerald-950">
               {language === 'ml'
                 ? 'പ്രധാന അടിയന്തിര കോൺടാക്റ്റ് ആക്കുക (Primary for SOS)'
                 : 'Set as Primary Emergency Contact (Called during SOS)'}
@@ -358,14 +368,14 @@ export const ContactsPage: React.FC = () => {
           </label>
 
           {formError && (
-            <p className="text-base font-bold text-sahaaya-alert">{formError}</p>
+            <p className="text-base font-black text-rose-700 bg-rose-50 p-3 rounded-xl border border-rose-200">{formError}</p>
           )}
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-sahaaya-border">
-            <Button type="button" variant="ghost" onClick={closeModal}>
+          <div className="flex items-center justify-end gap-3.5 pt-5 border-t-2 border-stone-200">
+            <Button type="button" variant="ghost" size="lg" onClick={closeModal}>
               {t('btnCancel')}
             </Button>
-            <Button type="submit" variant="primary">
+            <Button type="submit" variant="primary" size="lg">
               {t('btnSave')}
             </Button>
           </div>
@@ -379,21 +389,22 @@ export const ContactsPage: React.FC = () => {
         title={t('contactsSendMessage')}
       >
         {messageTarget && (
-          <div className="flex flex-col gap-5">
-            <p className="text-lg text-sahaaya-muted">
+          <div className="flex flex-col gap-6">
+            <p className="text-xl text-emerald-950 font-bold leading-relaxed">
               {language === 'ml'
                 ? `${messageTarget.name} എന്നവർക്ക് അയക്കാനുള്ള സന്ദേശം പരിശോധിക്കുക:`
                 : `Review the prepared message to send to ${messageTarget.name}:`}
             </p>
 
-            <div className="bg-sahaaya-cream/60 p-5 rounded-2xl border border-sahaaya-border text-xl font-medium text-sahaaya-text leading-relaxed">
+            <div className="bg-stone-50 p-6 rounded-3xl border-2 border-stone-300 text-2xl font-bold text-emerald-950 leading-relaxed shadow-inner font-sans">
               "{getPreparedHelpMessage(messageTarget.name, language)}"
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-4 border-t border-sahaaya-border">
+            <div className="flex flex-col sm:flex-row items-center justify-end gap-3.5 pt-5 border-t-2 border-stone-200">
               <Button
                 type="button"
                 variant="ghost"
+                size="lg"
                 onClick={() => setMessageTarget(null)}
               >
                 {t('btnCancel')}
@@ -401,12 +412,13 @@ export const ContactsPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => {
+                  triggerHapticFeedback(60);
                   sendSMSMessage(messageTarget.phone, getPreparedHelpMessage(messageTarget.name, language));
                   setMessageTarget(null);
                 }}
-                className="inline-flex items-center justify-center gap-2 bg-sahaaya-primary hover:bg-sahaaya-primaryHover text-white px-6 py-3.5 rounded-2xl font-bold text-lg min-h-[52px] shadow-sm w-full sm:w-auto"
+                className="inline-flex items-center justify-center gap-2.5 bg-emerald-800 hover:bg-emerald-900 text-white px-7 py-4 rounded-2xl font-black text-xl min-h-[56px] shadow-md w-full sm:w-auto cursor-pointer"
               >
-                <MessageSquare className="w-5 h-5" />
+                <Send className="w-6 h-6" />
                 <span>{language === 'ml' ? 'സന്ദേശം അയക്കുക (SMS)' : 'Open SMS App'}</span>
               </button>
             </div>
@@ -420,27 +432,28 @@ export const ContactsPage: React.FC = () => {
         onClose={() => setContactToDelete(null)}
         title={t('contactsDeleteConfirmTitle')}
       >
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-6">
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-full bg-rose-100 text-rose-700 flex items-center justify-center flex-shrink-0">
-              <AlertCircle className="w-7 h-7" />
+            <div className="w-14 h-14 rounded-2xl bg-rose-100 text-rose-700 flex items-center justify-center flex-shrink-0 border-2 border-rose-300">
+              <AlertCircle className="w-8 h-8" />
             </div>
             <div>
-              <p className="text-lg text-sahaaya-text font-medium">
+              <p className="text-xl text-emerald-950 font-bold leading-relaxed">
                 {t('contactsDeleteConfirmMsg')}
               </p>
               {contactToDelete && (
-                <p className="text-xl font-bold text-sahaaya-text mt-2">
+                <p className="text-2xl font-black text-emerald-950 mt-2 bg-stone-50 p-3 rounded-xl border border-stone-200">
                   "{contactToDelete.name}" ({contactToDelete.phone})
                 </p>
               )}
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-sahaaya-border">
+          <div className="flex items-center justify-end gap-3.5 pt-5 border-t-2 border-stone-200">
             <Button
               type="button"
               variant="ghost"
+              size="lg"
               onClick={() => setContactToDelete(null)}
             >
               {t('btnCancel')}
@@ -448,6 +461,7 @@ export const ContactsPage: React.FC = () => {
             <Button
               type="button"
               variant="danger"
+              size="lg"
               onClick={handleDelete}
             >
               {t('remindersDeleteBtn')}

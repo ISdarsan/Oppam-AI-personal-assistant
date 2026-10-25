@@ -3,11 +3,13 @@ import { Sparkles, Globe, Type, CheckCircle, BellRing, X } from 'lucide-react';
 import { useLanguage } from '../i18n/LanguageContext';
 import { supportedLanguages } from '../i18n/translations';
 import { Navigation, PageView } from './Navigation';
+import { Logo } from './ui/Logo';
 import { api } from '../services/api';
 import { storage } from '../services/storage';
 import { HealthStatus, Reminder, TextSize } from '../types';
 import { isToday, isOverdue, formatFriendlyTime } from '../utils/dateUtils';
 import { playGentleChime } from '../utils/sound';
+import { triggerHapticFeedback } from '../utils/communication';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -50,6 +52,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentPage, onNavigat
       if (dueNow && (!activeAlert || activeAlert.id !== dueNow.id)) {
         setActiveAlert(dueNow);
         playGentleChime();
+        triggerHapticFeedback([100, 50, 100]);
       }
     };
 
@@ -59,64 +62,81 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentPage, onNavigat
   }, [activeAlert]);
 
   const toggleLanguage = () => {
+    triggerHapticFeedback(30);
     const currentIndex = supportedLanguages.findIndex((l) => l.code === language);
     const nextLang = supportedLanguages[(currentIndex + 1) % supportedLanguages.length];
     setLanguage(nextLang.code);
   };
 
   const cycleTextSize = () => {
+    triggerHapticFeedback(30);
     const sizes: TextSize[] = ['normal', 'large', 'xlarge'];
     const next = sizes[(sizes.indexOf(textSize) + 1) % sizes.length];
     setTextSize(next);
   };
 
   const handleDismissAlert = () => {
+    triggerHapticFeedback(30);
     setActiveAlert(null);
   };
 
   const handleCompleteAlert = () => {
     if (activeAlert) {
+      triggerHapticFeedback(60);
       storage.toggleReminder(activeAlert.id);
       setActiveAlert(null);
       setPendingRemindersCount((prev) => Math.max(0, prev - 1));
     }
   };
 
+  const textSizeLabels: Record<TextSize, string> = {
+    normal: 'A (18px)',
+    large: 'A+ (20px)',
+    xlarge: 'A++ (22px)',
+  };
+
   return (
-    <div className="min-h-screen bg-sahaaya-bg flex flex-col font-sans pb-24">
+    <div className="min-h-screen bg-[#FBF9F5] flex flex-col font-sans pb-28 text-emerald-950">
       {/* Top Header */}
-      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b-2 border-sahaaya-border px-4 py-3 sm:px-6">
+      <header className="sticky top-0 z-30 bg-white/98 backdrop-blur-md border-b-2 border-emerald-900/15 px-3 py-2.5 sm:px-6 shadow-sm">
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
           {/* Logo & Name */}
           <button
-            onClick={() => onNavigate('home')}
-            className="flex items-center gap-3 text-left focus:outline-none focus:ring-2 focus:ring-sahaaya-primary rounded-xl p-1"
+            onClick={() => {
+              triggerHapticFeedback(30);
+              onNavigate('home');
+            }}
+            className="flex items-center gap-3 text-left focus:outline-none focus:ring-4 focus:ring-emerald-700/30 rounded-2xl p-1 transition-transform active:scale-95 cursor-pointer"
+            aria-label="Go to Home"
           >
-            <div className="w-11 h-11 rounded-2xl bg-sahaaya-cream flex items-center justify-center border-2 border-sahaaya-primary/30 flex-shrink-0">
-              <span className="text-2xl font-black text-sahaaya-primary">കൂ</span>
-            </div>
+            <Logo size="md" />
             <div>
-              <h1 className="text-xl sm:text-2xl font-black text-sahaaya-primary tracking-tight leading-tight">
-                {t('appName')}
-              </h1>
-              <p className="text-xs sm:text-sm text-sahaaya-muted hidden sm:block">
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl sm:text-2xl font-black text-emerald-900 tracking-tight leading-tight">
+                  Koode AI
+                </h1>
+                <span className="text-xs sm:text-sm font-black bg-emerald-100 text-emerald-900 border border-emerald-300 px-2 py-0.5 rounded-lg">
+                  കൂടെ
+                </span>
+              </div>
+              <p className="text-xs sm:text-sm text-emerald-800/80 font-medium hidden sm:block">
                 {t('appTagline')}
               </p>
             </div>
           </button>
 
-          {/* Quick Header Controls */}
+          {/* Senior Accessibility Quick Controls */}
           <div className="flex items-center gap-2">
-            {/* AI Status pill */}
+            {/* AI Status badge */}
             <div
-              className={`hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${
+              className={`hidden md:flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border-2 ${
                 health?.status === 'healthy'
-                  ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                  : 'bg-amber-50 text-amber-800 border-amber-200'
+                  ? 'bg-emerald-50 text-emerald-900 border-emerald-300'
+                  : 'bg-amber-50 text-amber-950 border-amber-300'
               }`}
               title={health?.message || 'Checking local AI...'}
             >
-              <Sparkles className="w-3.5 h-3.5" />
+              <Sparkles className="w-4 h-4 text-emerald-700" />
               <span>
                 {health?.status === 'healthy'
                   ? `Gemma AI Ready`
@@ -126,72 +146,73 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentPage, onNavigat
               </span>
             </div>
 
-            {/* Text Size toggle */}
+            {/* Dynamic Text Size toggle for Elders */}
             <button
               onClick={cycleTextSize}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-sahaaya-border bg-sahaaya-cream hover:bg-white text-sahaaya-text font-bold text-sm min-h-[48px] min-w-[48px] justify-center focus:outline-none focus:ring-2 focus:ring-sahaaya-primary transition-colors"
-              aria-label={`Current text size: ${textSize}. Tap to change.`}
+              className="flex items-center gap-1.5 px-3 py-2.5 rounded-2xl border-2 border-emerald-900/20 bg-stone-50 hover:bg-emerald-50 text-emerald-950 font-black text-sm sm:text-base min-h-[50px] min-w-[50px] justify-center focus:outline-none focus:ring-4 focus:ring-emerald-700/30 transition-all shadow-xs cursor-pointer"
+              aria-label={`Current text size: ${textSize}. Tap to switch between Normal, Large, and Extra Large.`}
               title="Change Text Size"
             >
-              <Type className="w-4 h-4 text-sahaaya-primary" />
-              <span className="capitalize">{textSize}</span>
+              <Type className="w-5 h-5 text-emerald-800" strokeWidth={2.5} />
+              <span className="font-extrabold">{textSizeLabels[textSize]}</span>
             </button>
 
-            {/* Language toggle */}
+            {/* Language toggle with clear native script */}
             <button
               onClick={toggleLanguage}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border-2 border-sahaaya-primary bg-sahaaya-accentLight hover:bg-sahaaya-cream text-sahaaya-primary font-bold text-sm min-h-[48px] justify-center focus:outline-none focus:ring-2 focus:ring-sahaaya-primary transition-colors"
+              className="flex items-center gap-2 px-3.5 py-2.5 rounded-2xl border-2 border-emerald-800 bg-emerald-800 hover:bg-emerald-900 text-white font-black text-sm sm:text-base min-h-[50px] justify-center focus:outline-none focus:ring-4 focus:ring-emerald-700/40 transition-all shadow-sm active:scale-95 cursor-pointer"
               aria-label="Switch language"
+              title="Switch Language"
             >
-              <Globe className="w-4 h-4" />
+              <Globe className="w-5 h-5" strokeWidth={2.5} />
               <span>{supportedLanguages.find((l) => l.code === language)?.nativeName || 'English'}</span>
             </button>
           </div>
         </div>
       </header>
 
-      {/* Due Reminder Alert Banner */}
+      {/* Reassuring Due Reminder Alert Banner */}
       {activeAlert && (
         <aside
           role="alert"
           aria-live="assertive"
-          className="bg-sahaaya-alertBg border-b-2 border-sahaaya-alert text-sahaaya-text px-4 py-3 shadow-md animate-slideDown"
+          className="bg-rose-50 border-b-4 border-rose-600 text-emerald-950 px-4 py-3.5 shadow-lg animate-slideDown"
         >
           <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-sahaaya-alert text-white flex items-center justify-center flex-shrink-0 animate-pulse">
-                <BellRing className="w-6 h-6" />
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-rose-600 text-white flex items-center justify-center flex-shrink-0 animate-pulse shadow-md">
+                <BellRing className="w-7 h-7" />
               </div>
               <div>
-                <p className="font-bold text-lg text-sahaaya-alert">
+                <p className="font-black text-xl text-rose-950 tracking-tight">
                   {language === 'ml' ? 'സമയമായിരിക്കുന്നു!' : 'Reminder Due Now!'}
                 </p>
-                <p className="text-base text-sahaaya-text font-medium">
-                  {activeAlert.title} — {formatFriendlyTime(activeAlert.time, language)}
+                <p className="text-lg text-emerald-950 font-bold">
+                  {activeAlert.title} — <span className="font-mono text-emerald-900">{formatFriendlyTime(activeAlert.time, language)}</span>
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               <button
                 onClick={handleCompleteAlert}
-                className="flex items-center gap-1.5 bg-sahaaya-primary hover:bg-sahaaya-primaryHover text-white px-3.5 py-2 rounded-xl font-bold text-sm min-h-[48px] focus:outline-none focus:ring-2 focus:ring-sahaaya-primary"
+                className="flex items-center gap-2 bg-emerald-800 hover:bg-emerald-900 text-white px-5 py-3 rounded-2xl font-black text-base min-h-[50px] shadow-sm focus:outline-none focus:ring-4 focus:ring-emerald-700/40 active:scale-95 cursor-pointer"
               >
-                <CheckCircle className="w-4 h-4" />
+                <CheckCircle className="w-5 h-5" />
                 <span>{t('remindersMarkDone')}</span>
               </button>
               <button
                 onClick={handleDismissAlert}
-                className="p-2 text-sahaaya-muted hover:text-sahaaya-text rounded-xl min-h-[48px] min-w-[48px] flex items-center justify-center"
+                className="p-3 text-stone-500 hover:text-stone-900 hover:bg-rose-100 rounded-2xl min-h-[50px] min-w-[50px] flex items-center justify-center cursor-pointer"
                 aria-label="Dismiss alert"
               >
-                <X className="w-5 h-5" />
+                <X className="w-6 h-6" />
               </button>
             </div>
           </div>
         </aside>
       )}
 
-      {/* Main Content Area */}
+      {/* Main Content Area with generous padding */}
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {children}
       </main>

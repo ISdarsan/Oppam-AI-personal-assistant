@@ -4,7 +4,9 @@ import { useLanguage } from '../i18n/LanguageContext';
 import { supportedLanguages } from '../i18n/translations';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
+import { Logo } from '../components/ui/Logo';
 import { storage } from '../services/storage';
+import { triggerHapticFeedback } from '../utils/communication';
 
 interface WelcomePageProps {
   onComplete: () => void;
@@ -17,6 +19,7 @@ export const WelcomePage: React.FC<WelcomePageProps> = ({ onComplete }) => {
   const [contactPhone, setContactPhone] = useState('');
 
   const handleStart = () => {
+    triggerHapticFeedback(60);
     updateSettings({
       displayName: displayName.trim(),
       completedOnboarding: true,
@@ -27,6 +30,7 @@ export const WelcomePage: React.FC<WelcomePageProps> = ({ onComplete }) => {
         name: contactName.trim(),
         relationship: 'Family',
         phone: contactPhone.trim(),
+        isPrimary: true,
       });
     }
 
@@ -34,44 +38,52 @@ export const WelcomePage: React.FC<WelcomePageProps> = ({ onComplete }) => {
   };
 
   return (
-    <div className="min-h-screen bg-sahaaya-bg flex items-center justify-center p-4 sm:p-6 font-sans">
-      <div className="max-w-2xl w-full bg-white rounded-3xl p-6 sm:p-10 shadow-lg border border-sahaaya-border flex flex-col gap-8">
-        {/* App Logo & Header */}
-        <div className="text-center flex flex-col items-center gap-3">
-          <div className="w-20 h-20 rounded-3xl bg-sahaaya-accentLight border-2 border-sahaaya-primary flex items-center justify-center text-4xl font-black text-sahaaya-primary shadow-inner">
-            സ
+    <div className="min-h-screen bg-[#FBF9F5] flex items-center justify-center p-4 sm:p-6 font-sans">
+      <div className="max-w-2xl w-full bg-white rounded-3xl p-6 sm:p-10 shadow-xl border-2 border-emerald-900/15 flex flex-col gap-8">
+        {/* App Logo & Warm Welcoming Header */}
+        <div className="text-center flex flex-col items-center gap-4">
+          <Logo size="xl" />
+          <div>
+            <div className="flex items-center justify-center gap-2.5">
+              <h1 className="text-3xl sm:text-4xl font-black text-emerald-950 tracking-tight">
+                Koode AI
+              </h1>
+              <span className="text-base sm:text-lg font-black bg-emerald-100 text-emerald-950 border border-emerald-300 px-2.5 py-0.5 rounded-xl">
+                കൂടെ
+              </span>
+            </div>
+            <p className="text-xl sm:text-2xl text-emerald-900 font-bold mt-1">
+              {t('appTagline')}
+            </p>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-black text-sahaaya-primary tracking-tight">
-            {t('appName')}
-          </h1>
-          <p className="text-xl sm:text-2xl text-sahaaya-text font-medium">
-            {t('appTagline')}
-          </p>
-          <p className="text-lg text-sahaaya-muted max-w-lg">
+          <p className="text-lg text-emerald-950/80 max-w-lg leading-relaxed font-medium">
             {t('welcomeStep1')}
           </p>
         </div>
 
         {/* 1. Language Preference */}
-        <div className="bg-sahaaya-cream/60 rounded-2xl p-5 border border-sahaaya-border flex flex-col gap-3">
-          <label className="text-lg font-bold text-sahaaya-text flex items-center gap-2">
-            <Globe className="w-5 h-5 text-sahaaya-primary" />
+        <div className="bg-stone-50 rounded-3xl p-5 sm:p-6 border-2 border-stone-200 flex flex-col gap-3.5">
+          <label className="text-xl font-black text-emerald-950 flex items-center gap-2.5">
+            <Globe className="w-6 h-6 text-emerald-800" strokeWidth={2.5} />
             <span>{t('welcomeChooseLang')}</span>
           </label>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {supportedLanguages.map((lang) => (
               <button
                 key={lang.code}
                 type="button"
-                onClick={() => setLanguage(lang.code)}
-                className={`py-3 px-3 rounded-xl font-bold text-base sm:text-lg border-2 transition-all min-h-[48px] text-center flex flex-col items-center justify-center ${
+                onClick={() => {
+                  triggerHapticFeedback(30);
+                  setLanguage(lang.code);
+                }}
+                className={`py-3.5 px-3 rounded-2xl font-black text-base sm:text-lg border-2 transition-all min-h-[56px] text-center flex flex-col items-center justify-center cursor-pointer active:scale-95 ${
                   language === lang.code
-                    ? 'bg-sahaaya-primary text-white border-sahaaya-primary shadow-sm'
-                    : 'bg-white text-sahaaya-text border-sahaaya-border hover:border-sahaaya-primary'
+                    ? 'bg-emerald-800 text-white border-emerald-900 shadow-md scale-102'
+                    : 'bg-white text-emerald-950 border-stone-300 hover:border-emerald-700 hover:bg-emerald-50'
                 }`}
               >
                 <span>{lang.nativeName}</span>
-                <span className={`text-xs ${language === lang.code ? 'text-emerald-100' : 'text-sahaaya-muted'}`}>
+                <span className={`text-xs ${language === lang.code ? 'text-emerald-100 font-medium' : 'text-stone-500 font-medium'}`}>
                   {lang.label}
                 </span>
               </button>
@@ -90,12 +102,12 @@ export const WelcomePage: React.FC<WelcomePageProps> = ({ onComplete }) => {
         </div>
 
         {/* 3. Optional Trusted Family Contact */}
-        <div className="bg-sahaaya-cream/40 rounded-2xl p-5 border border-sahaaya-border flex flex-col gap-3">
-          <h2 className="text-lg font-bold text-sahaaya-text flex items-center gap-2">
-            <UserPlus className="w-5 h-5 text-sahaaya-primary" />
+        <div className="bg-stone-50 rounded-3xl p-5 sm:p-6 border-2 border-stone-200 flex flex-col gap-4">
+          <h2 className="text-xl font-black text-emerald-950 flex items-center gap-2.5">
+            <UserPlus className="w-6 h-6 text-emerald-800" strokeWidth={2.5} />
             <span>{t('contactsTitle')} (Optional):</span>
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
               label={t('contactsName')}
               placeholder={t('contactsNamePlaceholder')}
@@ -112,33 +124,37 @@ export const WelcomePage: React.FC<WelcomePageProps> = ({ onComplete }) => {
           </div>
         </div>
 
-        {/* 4. Privacy & Permission Explanation */}
-        <div className="bg-emerald-50/70 border border-emerald-200 rounded-2xl p-5 flex flex-col gap-3">
-          <div className="flex items-start gap-3">
-            <Mic className="w-6 h-6 text-sahaaya-primary flex-shrink-0 mt-0.5" />
+        {/* 4. Privacy & Transparent Permission Explanation */}
+        <div className="bg-emerald-50/80 border-2 border-emerald-200 rounded-3xl p-5 sm:p-6 flex flex-col gap-3.5">
+          <div className="flex items-start gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-emerald-800 text-white flex items-center justify-center flex-shrink-0 mt-0.5">
+              <Mic className="w-6 h-6" />
+            </div>
             <div>
-              <h2 className="font-bold text-lg text-emerald-950">
+              <h2 className="font-black text-lg sm:text-xl text-emerald-950">
                 {t('welcomeMicNotice')}
               </h2>
-              <p className="text-base text-emerald-900 mt-1">
+              <p className="text-base text-emerald-900 mt-1 font-medium leading-relaxed">
                 {t('welcomeMicNoticeDesc')}
               </p>
             </div>
           </div>
-          <div className="flex items-start gap-3 pt-2 border-t border-emerald-200/60">
-            <ShieldCheck className="w-6 h-6 text-sahaaya-primary flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-emerald-900">
+          <div className="flex items-start gap-3.5 pt-3 border-t border-emerald-200">
+            <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-900 flex items-center justify-center flex-shrink-0">
+              <ShieldCheck className="w-6 h-6" />
+            </div>
+            <p className="text-base text-emerald-950 font-medium leading-relaxed">
               {t('settingsDataPrivacyDesc')}
             </p>
           </div>
         </div>
 
-        {/* Get Started Button */}
+        {/* Giant Get Started Button */}
         <Button
           size="xl"
           onClick={handleStart}
-          className="w-full text-xl shadow-md"
-          icon={<ArrowRight className="w-6 h-6" />}
+          className="w-full text-2xl shadow-lg"
+          icon={<ArrowRight className="w-7 h-7" strokeWidth={3} />}
         >
           {t('welcomeStartBtn')}
         </Button>
