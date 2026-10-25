@@ -86,11 +86,7 @@ Koode AI was built for the **Hacktoberfest 2026 DEV Challenge** (*"Build somethi
 
 ### 1. Environment Configuration
 
-Copy `.env.example` to `.env`:
 
-```powershell
-cp .env.example .env
-```
 
 Configure your `.env` file:
 ```env
