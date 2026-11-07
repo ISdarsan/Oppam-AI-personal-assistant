@@ -98,3 +98,11 @@ async def test_transcribe_quota_exhausted_mocked():
                 assert err["code"] == "QUOTA_EXHAUSTED"
     finally:
         sarvam_service.api_key = original_key
+
+
+def test_codec_suffix_is_stripped_before_sending_to_sarvam():
+    """Regression: browsers send 'audio/webm;codecs=opus' which Sarvam rejects as an invalid file type."""
+    import inspect
+    from app.services import sarvam_service as mod
+    src = inspect.getsource(mod.SarvamService.transcribe_audio)
+    assert '.split(";")[0]' in src

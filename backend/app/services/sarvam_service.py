@@ -122,7 +122,8 @@ class SarvamService:
         }
 
         files = {
-            "file": (filename, audio_bytes, content_type)
+            # Browsers label recordings like "audio/webm;codecs=opus"; Sarvam only accepts the bare type.
+            "file": (filename, audio_bytes, (content_type or "audio/webm").split(";")[0].strip().lower())
         }
         data = {
             "model": self.model,
