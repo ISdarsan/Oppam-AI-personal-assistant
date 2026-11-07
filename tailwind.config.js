@@ -8,8 +8,8 @@ export default {
     extend: {
       colors: {
         brand: {
-          ivory: '#FBF7EF',
-          paper: '#FFFDF8',
+          ivory: '#F7F0E3',
+          paper: '#FFFBF3',
           forest: '#1F4D3A',
           forestDark: '#163829',
           sage: '#DCE8DD',
@@ -61,6 +61,7 @@ export default {
         }
       },
       fontFamily: {
+        display: ['"Noto Serif Malayalam"', 'Cambria', 'Georgia', 'serif'],
         sans: [
           '"Noto Sans Malayalam"',
           '"Nirmala UI"',
