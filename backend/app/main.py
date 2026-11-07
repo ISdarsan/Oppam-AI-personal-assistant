@@ -1,14 +1,22 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .core.config import settings
-from .api import health, assistant, explainer, speech
+from contextlib import asynccontextmanager
+from .api import health, assistant, explainer, speech, demo, community, family, sos, ai_requests
+from .db import init_db
+
+@asynccontextmanager
+async def lifespan(_app):
+    init_db()
+    yield
 
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
     description="Backend API for Koode AI — A compassionate, multilingual elderly companion powered by Sarvam AI & open-weight Gemma.",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    lifespan=lifespan
 )
 
 # CORS configuration
@@ -26,6 +34,8 @@ app.include_router(health.router, prefix=settings.API_PREFIX)
 app.include_router(assistant.router, prefix=settings.API_PREFIX)
 app.include_router(explainer.router, prefix=settings.API_PREFIX)
 app.include_router(speech.router, prefix=settings.API_PREFIX)
+for _r in (demo, community, family, sos, ai_requests):
+    app.include_router(_r.router, prefix=settings.API_PREFIX)
 
 @app.get("/")
 async def root():

@@ -150,6 +150,16 @@ ollama run gemma2:2b
 
 ---
 
+## Community Backend (Person A): requests, family, SOS
+
+The FastAPI backend now includes a shared SQLite database (`backend/data/koode.db`, git-ignored) with three role-based demo users (`senior`, `helper`, `family`): community help requests with atomic helper acceptance, AI request drafting (Gemma via Ollama with a keyword fallback), family linking with senior approval, and in-app SOS/notifications (polling only; no SMS/WhatsApp/push).
+
+* Full endpoint contract and examples: [`docs/PERSON_A_API_CONTRACT.md`](docs/PERSON_A_API_CONTRACT.md)
+* Run backend tests: `.\.venv\Scripts\pytest backend	ests -v --ignore=backend	ests\integration_test_live.py`
+* Demo login has no passwords and is not production authentication.
+
+---
+
 ## Testing & Quality Assurance
 
 ### Run Frontend Unit Tests (Vitest)
