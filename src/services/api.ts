@@ -185,7 +185,7 @@ export const api = {
     }
   },
 
-  async interpretAssistant(text: string, language: Language, userTime?: string): Promise<AssistantResponse> {
+  async interpretAssistant(text: string, language: Language, userTime?: string, history: { role: 'user' | 'assistant'; text: string }[] = []): Promise<AssistantResponse> {
     try {
       const res = await fetch('/api/assistant/interpret', {
         method: 'POST',
@@ -194,6 +194,7 @@ export const api = {
           text,
           language,
           user_time: userTime || new Date().toISOString(),
+          history,
         }),
       });
 

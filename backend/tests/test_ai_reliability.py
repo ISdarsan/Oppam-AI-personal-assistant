@@ -208,3 +208,23 @@ async def test_compact_flat_model_output_is_accepted():
     body = res.json()
     assert body["intent"] == "create_reminder" and body["reminder_data"]["time"] == "20:00"
     assert body["reminder_data"]["date"] == "2026-11-07"  # time without date = today
+
+
+@pytest.mark.asyncio
+async def test_chat_receives_recent_conversation_history():
+    from app.services.sarvam_service import sarvam_service
+    seen = {}
+
+    async def fake_chat(text, lang, history=None):
+        seen["history"] = history
+        return "ശരി, മകളെ വിളിക്കാം."
+
+    gemma = {"intent": "general_qa", "reply": "x"}
+    hist = [{"role": "user", "text": "എനിക്ക് ഒറ്റയ്ക്ക് തോന്നുന്നു"}, {"role": "assistant", "text": "ഞാൻ ഒപ്പമുണ്ട്"}]
+    transport = ASGITransport(app=app)
+    with patch.object(ollama_client, "generate_json", new=AsyncMock(return_value=gemma)), patch.object(sarvam_service, "chat", new=fake_chat):
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            res = await client.post("/api/assistant/interpret", json={"text": "അവരോട് പറയണോ?", "language": "ml", "history": hist})
+            bad = await client.post("/api/assistant/interpret", json={"text": "hi", "language": "ml", "history": [{"role": "system", "text": "x"}]})
+    assert res.status_code == 200 and seen["history"] == hist
+    assert bad.status_code == 422  # only user/assistant roles are accepted

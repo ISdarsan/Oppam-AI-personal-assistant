@@ -1,10 +1,15 @@
-from typing import List, Optional
+from typing import List, Literal, Optional
 from pydantic import BaseModel, Field
+
+class HistoryTurn(BaseModel):
+    role: Literal['user', 'assistant']
+    text: str = Field(..., max_length=300)
 
 class AssistantInterpretRequest(BaseModel):
     text: str = Field(..., min_length=1, max_length=1500, description="User spoken or typed input")
     language: str = Field("en", description="User preferred language: 'en', 'ml', or other ISO codes")
     user_time: Optional[str] = Field(None, description="ISO timestamp of user local time for relative date/time context")
+    history: List[HistoryTurn] = Field(default_factory=list, max_length=8, description="Recent conversation turns (oldest first) so chat replies can remember context")
 
 class ReminderIntentData(BaseModel):
     title: str

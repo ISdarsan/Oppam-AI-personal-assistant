@@ -203,7 +203,7 @@ class SarvamService:
             raise SarvamServiceError("Sarvam returned no audio.") from e
 
 
-    async def chat(self, user_text: str, language: str = "ml") -> str:
+    async def chat(self, user_text: str, language: str = "ml", history: Optional[list] = None) -> str:
         """Short, warm conversational reply from Sarvam's chat model (writes natural Malayalam; Gemma cannot)."""
         if not self.is_configured():
             raise SarvamNotConfiguredError()
@@ -223,7 +223,9 @@ class SarvamService:
             client = SarvamAI(api_subscription_key=self.current_api_key)
             resp = client.chat.completions(
                 model=settings.SARVAM_CHAT_MODEL,
-                messages=[{"role": "system", "content": system}, {"role": "user", "content": user_text[:500]}],
+                messages=[{"role": "system", "content": system}]
+                + [{"role": h["role"], "content": str(h["text"])[:300]} for h in (history or [])[-6:]]
+                + [{"role": "user", "content": user_text[:500]}],
             )
             return (resp.choices[0].message.content or "").strip()
 

@@ -75,6 +75,8 @@ export const VoiceConversation: React.FC<Props> = ({ onResponse, onRequestHelp, 
   const [error, setError] = useState<string | null>(null);
   const [lastReply, setLastReply] = useState('');
   const [action, setAction] = useState<{ label: string; run: () => void } | null>(null);
+  const turnsRef = useRef<Turn[]>([]);
+  turnsRef.current = turns;
   const busy = useRef(false); // blocks duplicate submissions while one request is in flight
   const idRef = useRef(0);
   const endedSpeaking = useRef(false);
@@ -94,6 +96,8 @@ export const VoiceConversation: React.FC<Props> = ({ onResponse, onRequestHelp, 
       if (!said || busy.current) return;
       busy.current = true;
       setError(null);
+      // Recent turns (before this one) give the chat model memory of the conversation.
+      const history = turnsRef.current.slice(-6).map((t) => ({ role: (t.role === 'user' ? 'user' : 'assistant') as 'user' | 'assistant', text: t.text }));
       addTurn('user', said); // the original transcription is kept exactly as heard
       setAction(null);
 
@@ -115,7 +119,7 @@ export const VoiceConversation: React.FC<Props> = ({ onResponse, onRequestHelp, 
       setThinking(true);
       speak(c.ack, language); // immediate verified acknowledgement; the real answer replaces it when ready
       try {
-        const resp = await api.interpretAssistant(said, language, new Date().toISOString());
+        const resp = await api.interpretAssistant(said, language, new Date().toISOString(), history);
         onResponse(resp);
         addTurn('koode', resp.spoken_response);
         setLastReply(resp.spoken_response);

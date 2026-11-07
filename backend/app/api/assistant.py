@@ -175,7 +175,7 @@ async def interpret_assistant_request(request: AssistantInterpretRequest):
             # pass the script-purity check, otherwise (or if Sarvam is unavailable) a fixed, correct, warm reply is used.
             spoken_response = _ML_FALLBACK_CHAT
             try:
-                reply = await sarvam_service.chat(request.text, "ml")
+                reply = await sarvam_service.chat(request.text, "ml", [t.model_dump() for t in request.history])
                 if _clean_malayalam(reply):
                     spoken_response = reply
             except (SarvamServiceError, Exception):  # noqa: BLE001 - never let chat flavour break the assistant
