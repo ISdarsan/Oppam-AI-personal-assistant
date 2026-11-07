@@ -75,7 +75,7 @@ async def test_assistant_survives_malformed_model_fields(model_output):
     with patch.object(ollama_client, "generate_json", new=AsyncMock(return_value=model_output)):
         async with AsyncClient(transport=transport, base_url="http://test") as client:
             res = await client.post("/api/assistant/interpret", json={
-                "text": "remind me", "language": "en", "user_time": "2026-11-07T10:00:00"})
+                "text": "remind me at 8 pm", "language": "en", "user_time": "2026-11-07T10:00:00"})
     assert res.status_code == 200
     body = res.json()
     assert 0.0 <= body["confidence"] <= 1.0
@@ -141,14 +141,14 @@ async def test_malayalam_assistant_replies_are_deterministic_and_clean():
     transport = ASGITransport(app=app)
     with patch.object(ollama_client, "generate_json", new=AsyncMock(return_value=garbled)):
         async with AsyncClient(transport=transport, base_url="http://test") as client:
-            res = await client.post("/api/assistant/interpret", json={"text": "ഗുളിക ഓർമ്മിപ്പിക്കൂ", "language": "ml", "user_time": "2026-11-07T10:00:00"})
+            res = await client.post("/api/assistant/interpret", json={"text": "ഗുളിക 8 മണിക്ക് ഓർമ്മിപ്പിക്കൂ", "language": "ml", "user_time": "2026-11-07T10:00:00"})
     body = res.json()
     assert body["reminder_data"]["title"] == "മരുന്ന് കഴിക്കുക"
     assert _clean_malayalam(body["spoken_response"]) and "20:00" in body["spoken_response"]
     # English users are untouched
     with patch.object(ollama_client, "generate_json", new=AsyncMock(return_value=garbled)):
         async with AsyncClient(transport=transport, base_url="http://test") as client:
-            res = await client.post("/api/assistant/interpret", json={"text": "remind me", "language": "en", "user_time": "2026-11-07T10:00:00"})
+            res = await client.post("/api/assistant/interpret", json={"text": "remind me at 8 pm", "language": "en", "user_time": "2026-11-07T10:00:00"})
     assert res.json()["reminder_data"]["title"] == "Take blood pressure tablet"
 
 
@@ -174,3 +174,29 @@ async def test_malayalam_open_chat_uses_fixed_warm_reply_not_model_text():
             res = await client.post("/api/assistant/interpret", json={"text": "നമസ്കാരം, സുഖമാണോ?", "language": "ml"})
     assert res.json()["intent"] == "general_qa"
     assert "കൂടെയുണ്ട്" in res.json()["spoken_response"] and "കേൾപ്പെടെ" not in res.json()["spoken_response"]
+
+
+@pytest.mark.parametrize("text", ["Remind me to call Lakshmi", "മകളെ വിളിക്കാൻ ഓർമ്മിപ്പിക്കൂ"])
+@pytest.mark.asyncio
+async def test_never_guesses_a_reminder_time_the_user_did_not_say(text):
+    """Regression: a compressed prompt made the model invent 18:00 for 'call Lakshmi'. Enforced in code now."""
+    invented = {"intent": "create_reminder", "title": "Call Lakshmi", "category": "call", "date": "2026-11-07", "time": "18:00"}
+    lang = "ml" if any("ഀ" <= c <= "ൿ" for c in text) else "en"
+    transport = ASGITransport(app=app)
+    with patch.object(ollama_client, "generate_json", new=AsyncMock(return_value=invented)):
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            res = await client.post("/api/assistant/interpret", json={"text": text, "language": lang, "user_time": "2026-11-07T14:00:00"})
+    body = res.json()
+    assert body["intent"] == "clarification_needed" and body["reminder_data"] is None
+
+
+@pytest.mark.asyncio
+async def test_compact_flat_model_output_is_accepted():
+    flat = {"intent": "create_reminder", "title": "Take tablet", "category": "medicine", "date": "", "time": "20:00"}
+    transport = ASGITransport(app=app)
+    with patch.object(ollama_client, "generate_json", new=AsyncMock(return_value=flat)):
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            res = await client.post("/api/assistant/interpret", json={"text": "remind me to take tablet at 8 pm", "language": "en", "user_time": "2026-11-07T14:00:00"})
+    body = res.json()
+    assert body["intent"] == "create_reminder" and body["reminder_data"]["time"] == "20:00"
+    assert body["reminder_data"]["date"] == "2026-11-07"  # time without date = today

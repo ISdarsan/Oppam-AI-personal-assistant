@@ -18,49 +18,17 @@ LANG_NAME_MAP = {
 }
 
 def get_assistant_interpret_prompt(user_text: str, current_time_str: str, language: str) -> str:
-    lang_name = LANG_NAME_MAP.get(language, "English")
-    return f"""You are Koode AI, a warm, reassuring, highly reliable digital companion for elderly users.
-Today's local reference time is: {current_time_str}.
-User's preferred response language is: {lang_name}.
+    # For Malayalam the app speaks fixed, correct Malayalam templates (the model's own Malayalam is unreliable and
+    # slow to generate), so the model only needs to UNDERSTAND the input; its short reply is written in English.
+    lang_name = "English" if language == "ml" else LANG_NAME_MAP.get(language, "English")
+    return f"""You are Koode AI, a warm companion for elderly users. Now: {current_time_str}.
+User said (may be Malayalam or English): "{user_text}"
 
-Analyze the user's voice/text request:
-"{user_text}"
+Pick one intent: create_reminder (wants a reminder; a time was said), view_reminders, explain_message, general_qa (friendly chat), clarification_needed (wants a reminder but NO time was said; never guess a time), unknown.
+For create_reminder give: short English title (e.g. "Take blood pressure tablet"); category medicine|doctor|call|water|general; date YYYY-MM-DD from now (time given but no date = today; "tomorrow" = next day); time 24-hour HH:MM ("8 in the evening" = "20:00", "10 in the morning" = "10:00"). Never invent doses or times.
+"reply": one short warm sentence in {lang_name}, only for general_qa.
 
-Determine the user's intent. Possible intents:
-1. "create_reminder": User wants to be reminded of something at a specific or implied time/date.
-2. "view_reminders": User is asking to see or hear their reminders (e.g. "what do I have today?").
-3. "explain_message": User wants to understand or explain a message.
-4. "general_qa": A general friendly conversation question or reassurance.
-5. "clarification_needed": The user wants a reminder or action, but critical details (like time or date) are missing or too ambiguous. DO NOT GUESS dates or times.
-6. "unknown": Input is incomprehensible.
-
-Rules:
-- If intent is "create_reminder":
-  - Extract a clean title (e.g. "Call daughter", "Take blood pressure tablet").
-  - NEVER invent medication dosages, milligrams, or clinical instructions not explicitly spoken by the user.
-  - Determine category: "medicine" (pills, tablets, drops, pressure, sugar), "doctor" (clinic, hospital, checkup), "call" (phone daughter, son, relative, friend), "water" (drinking water, hydration), or "general".
-  - Extract date in YYYY-MM-DD format using the reference date {current_time_str}. (e.g. "today" -> today's date, "tomorrow" -> next day's date). If no date mentioned but a time is given (e.g. "at 6 this evening"), assume today's date.
-  - Extract time in 24-hour HH:MM format (e.g. "6 in the evening" -> "18:00", "10 in the morning" -> "10:00").
-  - If the time is missing (e.g. "remind me to take medicine after dinner" with no exact hour, or "remind me to call Lakshmi"), set intent to "clarification_needed", list missing fields in missing_fields, and politely ask what time they would like to be reminded.
-- "spoken_response": Must be a warm, gentle, simple 1-2 sentence response addressed to an elderly person in {lang_name}.
-- "requires_confirmation": Always true for reminder creation.
-
-OUTPUT FORMAT: Return ONLY a valid JSON object with NO extra text or markdown code fences:
-{{
-  "intent": "create_reminder" | "view_reminders" | "explain_message" | "general_qa" | "clarification_needed" | "unknown",
-  "spoken_response": "friendly reply in {lang_name}",
-  "reminder_data": {{
-    "title": "clean reminder title",
-    "category": "medicine" | "doctor" | "call" | "water" | "general",
-    "date": "YYYY-MM-DD",
-    "time": "HH:MM",
-    "description": null,
-    "missing_fields": [],
-    "requires_confirmation": true
-  }},
-  "clarification_prompt": null or "clarification question if clarification_needed",
-  "confidence": 0.95
-}}
+Return ONLY compact JSON: {{"intent": "", "title": "", "category": "", "date": "", "time": "", "reply": ""}}
 """
 
 def get_message_explain_prompt(message_text: str, language: str) -> str:

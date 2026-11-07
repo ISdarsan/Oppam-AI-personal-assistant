@@ -72,7 +72,10 @@ export const AssistantPage: React.FC<AssistantPageProps> = ({ onReminderSaved, o
   useEffect(() => {
     if (sarvamTranscript) {
       setInputText(sarvamTranscript);
+      // Voice-first: answer straight after the words are recognised (a reminder still needs the senior's confirmation).
+      void handleAskKoode(sarvamTranscript);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sarvamTranscript]);
 
   const handleMicClick = async () => {

@@ -44,6 +44,19 @@ def _quick_intent(text: str):
     return "view_reminders" if (_TODAY_ML.search(text) or _TODAY_EN.search(text)) else None
 
 
+# A reminder must never get a time the senior did not say. Small models happily invent one ("call Lakshmi" -> 18:00),
+# so this is enforced in code: no time cue in the user's own words => ask "what time?".
+_TIME_CUE = re.compile(
+    r"\d|മണി|o'?clock|\bnoon\b|midnight|\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\b"
+    r"|ഒന്ന്|രണ്ട്|മൂന്ന്|നാല്|അഞ്ച്|ആറ്|ഏഴ്|എട്ട്|ഒമ്പത്|ഒൻപത്|പത്ത്|പതിനൊന്ന്|പന്ത്രണ്ട്",
+    re.I,
+)
+
+
+def _has_time_cue(text: str) -> bool:
+    return bool(_TIME_CUE.search(text))
+
+
 def _safe_confidence(value) -> float:
     try:
         return min(1.0, max(0.0, float(value)))
@@ -89,11 +102,22 @@ async def interpret_assistant_request(request: AssistantInterpretRequest):
     intent = raw_output.get("intent", "unknown")
     if intent not in VALID_INTENTS:
         intent = "unknown"
-    spoken_response = raw_output.get("spoken_response") or "I heard you, but let us verify."
     reminder_data_raw = raw_output.get("reminder_data")
     if not isinstance(reminder_data_raw, dict):
         reminder_data_raw = None
+    # Compact model format: flat title/category/date/time fields (fewer tokens = faster replies).
+    if reminder_data_raw is None and intent == "create_reminder" and raw_output.get("title"):
+        reminder_data_raw = {k: raw_output.get(k) or None for k in ("title", "category", "date", "time")}
+    if reminder_data_raw is not None and not _has_time_cue(request.text):
+        reminder_data_raw = {**reminder_data_raw, "time": None}  # never guess a time
     clarification_prompt = raw_output.get("clarification_prompt")
+    spoken_response = raw_output.get("spoken_response") or raw_output.get("reply")
+    if not spoken_response:
+        spoken_response = (
+            f"I will remind you: {reminder_data_raw.get('title') or 'Reminder'}. Please confirm."
+            if intent == "create_reminder" and reminder_data_raw
+            else "I am here with you."
+        )
 
     parsed_reminder: ReminderIntentData | None = None
     if intent == "create_reminder" and reminder_data_raw:
