@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Mic,
-  MicOff,
   Send,
   Sparkles,
   CheckCircle,
@@ -9,7 +7,6 @@ import {
   Calendar,
   Clock,
   AlertTriangle,
-  Radio,
   Pill,
   Stethoscope,
   Phone,
@@ -19,8 +16,8 @@ import {
   Edit3,
 } from 'lucide-react';
 import { useLanguage } from '../i18n/LanguageContext';
-import { useSarvamAudioRecorder } from '../hooks/useSarvamAudioRecorder';
 import { useSpeechSynthesis } from '../hooks/useSpeechSynthesis';
+import { VoiceConversation } from '../voice/VoiceConversation';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { api, ApiError } from '../services/api';
@@ -33,6 +30,7 @@ interface AssistantPageProps {
   onReminderSaved?: () => void;
   /** Offered when the senior's words sound like a request for community help; never sent automatically. */
   onRequestHelp?: (text: string) => void;
+  onNavigate?: (page: import('../components/Navigation').PageView) => void;
   /** Sentence spoken to the global voice control; sent as soon as the page opens. */
   initialText?: string;
 }
@@ -40,7 +38,7 @@ interface AssistantPageProps {
 const HELP_HINT =
   /(buy|bring|fetch|pick up|take me|take her|take him|someone to|help me|need help|groceries|medicine|hospital|bank|ration|ride|taxi)|(വാങ്ങ|സഹായം|ആശുപത്രി|മരുന്ന്|പലചരക്ക്|ബാങ്ക്|യാത്ര|കൊണ്ടുപോ|റേഷൻ)/i;
 
-export const AssistantPage: React.FC<AssistantPageProps> = ({ onReminderSaved, onRequestHelp, initialText }) => {
+export const AssistantPage: React.FC<AssistantPageProps> = ({ onReminderSaved, onRequestHelp, onNavigate, initialText }) => {
   const { language, settings, t, tx } = useLanguage();
   const [inputText, setInputText] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -50,23 +48,6 @@ export const AssistantPage: React.FC<AssistantPageProps> = ({ onReminderSaved, o
   const [errorSuggestion, setErrorSuggestion] = useState<string | null>(null);
   const [successNotice, setSuccessNotice] = useState<string | null>(null);
   const [transcribedWithSarvam, setTranscribedWithSarvam] = useState(false);
-
-  // Sarvam AI Voice Hook
-  const {
-    recordingDuration,
-    transcript: sarvamTranscript,
-    errorMessage: recorderError,
-    errorSuggestion: recorderSuggestion,
-    isRecording,
-    isProcessing: isTranscribing,
-    startRecording,
-    stopRecording,
-    cancelRecording,
-    reset: resetRecorder,
-  } = useSarvamAudioRecorder(language, (transcribed) => {
-    setInputText(transcribed);
-    setTranscribedWithSarvam(true);
-  });
 
   const { speak } = useSpeechSynthesis(settings.speechRate);
 
@@ -78,36 +59,9 @@ export const AssistantPage: React.FC<AssistantPageProps> = ({ onReminderSaved, o
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Sync Sarvam transcript to input box when ready
-  useEffect(() => {
-    if (sarvamTranscript) {
-      setInputText(sarvamTranscript);
-      // Voice-first: answer straight after the words are recognised (a reminder still needs the senior's confirmation).
-      void handleAskKoode(sarvamTranscript);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sarvamTranscript]);
-
-  const handleMicClick = async () => {
-    if (isRecording) {
-      stopRecording();
-    } else {
-      setErrorMessage(null);
-      setErrorSuggestion(null);
-      setSuccessNotice(null);
-      setPendingReminder(null);
-      setTranscribedWithSarvam(false);
-      await startRecording();
-    }
-  };
-
   const handleAskKoode = async (textToSubmit?: string) => {
     const query = (textToSubmit || inputText).trim();
     if (!query) return;
-
-    if (isRecording) {
-      stopRecording();
-    }
 
     setIsProcessing(true);
     setErrorMessage(null);
@@ -166,7 +120,6 @@ export const AssistantPage: React.FC<AssistantPageProps> = ({ onReminderSaved, o
     setPendingReminder(null);
     setInputText('');
     setTranscribedWithSarvam(false);
-    resetRecorder();
 
     if (settings.autoSpeak) {
       speak(successMsg, language);
@@ -270,96 +223,17 @@ export const AssistantPage: React.FC<AssistantPageProps> = ({ onReminderSaved, o
 
       {/* Main Voice & Text Interaction Card */}
       <Card className="flex flex-col items-center gap-7 p-6 sm:p-10 bg-gradient-to-b from-white to-[#FBF9F5] border-2 border-stone-200 shadow-md">
-        {/* Large Accessible Microphone Action Area */}
-        <div className="flex flex-col items-center gap-4 w-full">
-          {/* Microphone Button */}
-          <div className="relative">
-            {isRecording && (
-              <span className="absolute -inset-3 rounded-full bg-rose-500/20 animate-ping pointer-events-none" />
-            )}
-            <button
-              onClick={handleMicClick}
-              disabled={isTranscribing}
-              className={`w-32 h-32 sm:w-36 sm:h-36 rounded-full flex flex-col items-center justify-center transition-all duration-200 shadow-xl focus:outline-none focus:ring-8 focus:ring-emerald-700/30 cursor-pointer ${
-                isRecording
-                  ? 'bg-rose-600 hover:bg-rose-700 text-white animate-pulse ring-8 ring-rose-200 scale-105'
-                  : isTranscribing
-                  ? 'bg-amber-600 text-white cursor-wait'
-                  : 'bg-emerald-800 hover:bg-emerald-900 text-white hover:scale-105 active:scale-95 border-4 border-emerald-900/40'
-              }`}
-              aria-label={isRecording ? t('assistantMicStop') : t('assistantMicStart')}
-            >
-              {isRecording ? (
-                <>
-                  <MicOff className="w-14 h-14 sm:w-16 sm:h-16" strokeWidth={2.5} />
-                  <span className="text-xs font-black uppercase mt-1 tracking-wider">Stop</span>
-                </>
-              ) : isTranscribing ? (
-                <>
-                  <Radio className="w-14 h-14 sm:w-16 sm:h-16 animate-spin" strokeWidth={2.5} />
-                  <span className="text-xs font-black uppercase mt-1 tracking-wider">Transcribing</span>
-                </>
-              ) : (
-                <>
-                  <Mic className="w-14 h-14 sm:w-16 sm:h-16" strokeWidth={2.5} />
-                  <span className="text-xs font-black uppercase mt-1 tracking-wider">Speak</span>
-                </>
-              )}
-            </button>
-          </div>
-
-          {/* Recording Timer & Status Label */}
-          <div className="text-center">
-            {isRecording ? (
-              <div className="flex flex-col items-center gap-1">
-                <div className="flex items-center gap-2 text-rose-600 font-black text-2xl animate-pulse">
-                  <span className="w-3.5 h-3.5 rounded-full bg-rose-600" />
-                  <span>
-                    00:{recordingDuration < 10 ? `0${recordingDuration}` : recordingDuration} / 00:30
-                  </span>
-                </div>
-                <p className="text-lg font-bold text-rose-700">
-                  {language === 'ml' ? 'ശ്രദ്ധയോടെ കേൾക്കുന്നു... (Sarvam AI)' : 'Listening... Tap Stop when done'}
-                </p>
-                <button
-                  onClick={cancelRecording}
-                  className="mt-2 text-sm text-stone-500 hover:text-rose-700 underline font-semibold cursor-pointer"
-                >
-                  {language === 'ml' ? 'റദ്ദാക്കുക' : 'Cancel recording'}
-                </button>
-              </div>
-            ) : isTranscribing ? (
-              <p className="text-xl font-black text-amber-800 animate-pulse">
-                {language === 'ml'
-                  ? 'സർവം AI ശബ്ദം മാറ്റിക്കൊണ്ടിരിക്കുന്നു...'
-                  : 'Transcribing speech with Sarvam AI...'}
-              </p>
-            ) : (
-              <p className="text-2xl font-black text-emerald-950 tracking-tight">
-                {t('assistantMicStart')}
-              </p>
-            )}
-          </div>
+        <div className="w-full">
+          <VoiceConversation
+            onRequestHelp={onRequestHelp}
+            onNavigate={onNavigate}
+            onResponse={(resp) => {
+              setLastResponse(resp);
+              setSuccessNotice(null);
+              setPendingReminder(resp.intent === 'create_reminder' && resp.reminder_data ? resp.reminder_data : null);
+            }}
+          />
         </div>
-
-        {/* Audio Recorder Error Banner */}
-        {recorderError && (
-          <div
-            role="alert"
-            className="w-full bg-rose-50 border-2 border-rose-400 rounded-3xl p-5 flex items-start gap-4 shadow-sm"
-          >
-            <AlertTriangle className="w-7 h-7 text-rose-700 flex-shrink-0 mt-0.5" />
-            <div>
-              <h4 className="font-black text-lg text-rose-950">
-                {language === 'ml' ? 'ശബ്ദ റെക്കോർഡിംഗ് അറിയിപ്പ്' : 'Voice Recording Notice'}
-              </h4>
-              <p className="text-base text-rose-900 mt-0.5 font-medium">{recorderError}</p>
-              {recorderSuggestion && (
-                <p className="text-sm text-rose-800 mt-1 font-semibold">{recorderSuggestion}</p>
-              )}
-            </div>
-          </div>
-        )}
 
         {/* Transcribed Badge if populated via Sarvam */}
         {transcribedWithSarvam && inputText && (

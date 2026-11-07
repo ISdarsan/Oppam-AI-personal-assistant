@@ -48,6 +48,7 @@ const SeniorApp: React.FC = () => {
         <AssistantPage
           key={chatSeed}
           initialText={chatSeed}
+          onNavigate={go}
           onRequestHelp={(text) => {
             setHelpSeed(text);
             setCurrentPage('help');

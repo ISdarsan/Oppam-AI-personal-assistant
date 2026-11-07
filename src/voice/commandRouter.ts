@@ -33,7 +33,7 @@ export function routeVoiceCommand(raw: string): VoiceCommand {
   if (/ഓർമ്മ|റിമൈൻഡർ|മരുന്ന് (സമയം|ഓർമ്മ)|reminder/.test(t)) {
     return nav('reminders', 'ഓർമ്മപ്പെടുത്തലുകൾ തുറക്കുന്നു', 'Opening reminders');
   }
-  if (/കുടുംബ|മക്കൾ|മകൾ|മകൻ|family/.test(t) && !HELP_NEED.test(t)) {
+  if (/കുടുംബ|മക്കൾ|മകൾ|മകൻ|മകളെ|മകനെ|വിളിക്കണം|call (my )?(daughter|son)|family/.test(t) && !HELP_NEED.test(t)) {
     return nav('family', 'കുടുംബ പേജ് തുറക്കുന്നു', 'Opening family');
   }
   if (/രേഖ|സന്ദേശം|എസ്എംഎസ്|document|message|letter/.test(t) && !HELP_NEED.test(t)) {

@@ -46,4 +46,10 @@ describe('voice command router', () => {
       expect(cmd.say.en.length).toBeGreaterThan(0);
     }
   });
+
+  it('the three conversation test sentences are routed correctly', () => {
+    expect(routeVoiceCommand('നമസ്കാരം, എനിക്ക് ഇന്ന് എന്തൊക്കെ ചെയ്യാനുണ്ട്?').type).toBe('chat');
+    expect(routeVoiceCommand('എനിക്ക് മരുന്ന് വാങ്ങാൻ സഹായം വേണം.').type).toBe('help');
+    expect(routeVoiceCommand('എനിക്ക് സുഖമില്ല, മകളെ വിളിക്കണം.')).toMatchObject({ type: 'navigate', page: 'family' });
+  });
 });

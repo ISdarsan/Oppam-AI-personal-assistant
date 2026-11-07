@@ -6,6 +6,8 @@ interface SpeechSynthesisHook {
   isSupported: boolean;
   speak: (text: string, lang?: Language) => void;
   stop: () => void;
+  /** true when no voice for the language could be used on this device (the text is still shown) */
+  voiceUnavailable: boolean;
 }
 
 const TTS_LOCALE_MAP: Record<Language, string> = {
@@ -28,6 +30,7 @@ const audioCache = new Map<string, string>(); // "lang|text" -> object URL (shor
 
 export function useSpeechSynthesis(rate: number = 0.9): SpeechSynthesisHook {
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
+  const [voiceUnavailable, setVoiceUnavailable] = useState<boolean>(false);
   const browserSupported = typeof window !== 'undefined' && 'speechSynthesis' in window;
   const audioSupported = typeof window !== 'undefined' && typeof Audio !== 'undefined';
   const isSupported = browserSupported || audioSupported;
@@ -58,6 +61,11 @@ export function useSpeechSynthesis(rate: number = 0.9): SpeechSynthesisHook {
       const voices = window.speechSynthesis.getVoices();
       const matchedVoice = voices.find((v) => v.lang.startsWith(lang) || v.lang.startsWith(locale));
       if (matchedVoice) utterance.voice = matchedVoice;
+      // Malayalam with no installed voice would be silent: say so instead of pretending it was spoken.
+      if (!matchedVoice && lang === 'ml') {
+        setVoiceUnavailable(true);
+        return;
+      }
       utterance.onstart = () => setIsSpeaking(true);
       utterance.onend = () => setIsSpeaking(false);
       utterance.onerror = () => setIsSpeaking(false);
@@ -70,6 +78,7 @@ export function useSpeechSynthesis(rate: number = 0.9): SpeechSynthesisHook {
     (text: string, lang: Language = 'en') => {
       if (!text) return;
       stop();
+      setVoiceUnavailable(false);
       const mine = token.current;
 
       const run = async () => {
@@ -108,5 +117,5 @@ export function useSpeechSynthesis(rate: number = 0.9): SpeechSynthesisHook {
     [audioSupported, rate, speakWithBrowser, stop]
   );
 
-  return { isSpeaking, isSupported, speak, stop };
+  return { isSpeaking, isSupported, speak, stop, voiceUnavailable };
 }
