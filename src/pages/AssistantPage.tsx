@@ -33,12 +33,14 @@ interface AssistantPageProps {
   onReminderSaved?: () => void;
   /** Offered when the senior's words sound like a request for community help; never sent automatically. */
   onRequestHelp?: (text: string) => void;
+  /** Sentence spoken to the global voice control; sent as soon as the page opens. */
+  initialText?: string;
 }
 
 const HELP_HINT =
   /(buy|bring|fetch|pick up|take me|take her|take him|someone to|help me|need help|groceries|medicine|hospital|bank|ration|ride|taxi)|(വാങ്ങ|സഹായം|ആശുപത്രി|മരുന്ന്|പലചരക്ക്|ബാങ്ക്|യാത്ര|കൊണ്ടുപോ|റേഷൻ)/i;
 
-export const AssistantPage: React.FC<AssistantPageProps> = ({ onReminderSaved, onRequestHelp }) => {
+export const AssistantPage: React.FC<AssistantPageProps> = ({ onReminderSaved, onRequestHelp, initialText }) => {
   const { language, settings, t, tx } = useLanguage();
   const [inputText, setInputText] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -67,6 +69,14 @@ export const AssistantPage: React.FC<AssistantPageProps> = ({ onReminderSaved, o
   });
 
   const { speak } = useSpeechSynthesis(settings.speechRate);
+
+  useEffect(() => {
+    if (initialText) {
+      setInputText(initialText);
+      void handleAskKoode(initialText);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Sync Sarvam transcript to input box when ready
   useEffect(() => {

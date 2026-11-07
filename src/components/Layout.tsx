@@ -5,6 +5,8 @@ import { useLanguage } from '../i18n/LanguageContext';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { Navigation, PageView } from './Navigation';
 import { Logo } from './ui/Logo';
+import { VoiceDock } from '../voice/VoiceDock';
+import type { VoiceCommand } from '../voice/commandRouter';
 import { storage } from '../services/storage';
 import { Reminder, TextSize } from '../types';
 import { isToday, isOverdue, formatFriendlyTime } from '../utils/dateUtils';
@@ -15,10 +17,11 @@ interface LayoutProps {
   children: React.ReactNode;
   currentPage: PageView;
   onNavigate: (page: PageView) => void;
+  onVoiceCommand?: (cmd: VoiceCommand) => void;
 }
 
 /** Frame for the senior experience: brand header, language, text size, settings, log out, bottom navigation. */
-export const Layout: React.FC<LayoutProps> = ({ children, currentPage, onNavigate }) => {
+export const Layout: React.FC<LayoutProps> = ({ children, currentPage, onNavigate, onVoiceCommand }) => {
   const { language, textSize, setTextSize, t, tx } = useLanguage();
   const { user, logout } = useAuth();
   const [activeAlert, setActiveAlert] = useState<Reminder | null>(null);
@@ -143,6 +146,9 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentPage, onNavigat
       )}
 
       <main className="flex-1 max-w-3xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8">{children}</main>
+
+      {/* Voice control everywhere except screens that already have their own microphone */}
+      {onVoiceCommand && !['assistant', 'help', 'sos'].includes(currentPage) && <VoiceDock onCommand={onVoiceCommand} />}
 
       <Navigation currentPage={currentPage} onNavigate={onNavigate} reminderCount={pendingRemindersCount} />
     </div>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import type { VoiceCommand } from './voice/commandRouter';
 import { LanguageProvider } from './i18n/LanguageContext';
 import { AuthProvider, useAuth } from './auth/AuthContext';
 import { Layout } from './components/Layout';
@@ -19,18 +20,34 @@ import { SettingsPage } from './pages/SettingsPage';
 const SeniorApp: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<PageView>('home');
   const [helpSeed, setHelpSeed] = useState('');
+  const [chatSeed, setChatSeed] = useState('');
   const [isAddReminderModalOpen, setIsAddReminderModalOpen] = useState(false);
 
   const go = (page: PageView) => {
     if (page !== 'help') setHelpSeed('');
+    if (page !== 'assistant') setChatSeed('');
     setCurrentPage(page);
   };
 
+  const onVoiceCommand = (cmd: VoiceCommand) => {
+    if (cmd.type === 'navigate') {
+      go(cmd.page);
+    } else if (cmd.type === 'help') {
+      setHelpSeed(cmd.text); // pre-fills the help flow; the senior still reviews and confirms
+      setCurrentPage('help');
+    } else {
+      setChatSeed(cmd.text);
+      setCurrentPage('assistant');
+    }
+  };
+
   return (
-    <Layout currentPage={currentPage} onNavigate={go}>
+    <Layout currentPage={currentPage} onNavigate={go} onVoiceCommand={onVoiceCommand}>
       {currentPage === 'home' && <SeniorHomePage onNavigate={go} />}
       {currentPage === 'assistant' && (
         <AssistantPage
+          key={chatSeed}
+          initialText={chatSeed}
           onRequestHelp={(text) => {
             setHelpSeed(text);
             setCurrentPage('help');
