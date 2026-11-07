@@ -165,15 +165,23 @@ async def test_help_draft_for_malayalam_uses_clean_title_and_original_words():
     assert _clean_malayalam(out.spoken_response.replace(": ", " ").replace("ഞാൻ മനസ്സിലാക്കിയത്", "ഞാൻ"))
 
 
+@pytest.mark.parametrize("sarvam_reply,expect", [
+    ("നമസ്കാരം, സുഖമാണോ?", "നമസ്കാരം, സുഖമാണോ?"),        # clean Malayalam from Sarvam is used
+    ("സുഖമാണ് nevoie 약", "കൂടെയുണ്ട്"),                       # foreign-script output -> fixed reply
+    (Exception("sarvam down"), "കൂടെയുണ്ട്"),                  # service failure -> fixed reply
+])
 @pytest.mark.asyncio
-async def test_malayalam_open_chat_uses_fixed_warm_reply_not_model_text():
-    chat = {"intent": "general_qa", "spoken_response": "സുഖമാണെന്ന് കേൾപ്പെടെ സന്തോഷം"}  # fluent-looking nonsense seen live
+async def test_malayalam_open_chat_uses_sarvam_when_clean_else_fixed_reply(sarvam_reply, expect):
+    from app.services.sarvam_service import sarvam_service
+    gemma = {"intent": "general_qa", "reply": "സുഖമാണെന്ന് കേൾപ്പെടെ സന്തോഷം"}  # Gemma's nonsense must never be used
+    mock = AsyncMock(side_effect=sarvam_reply) if isinstance(sarvam_reply, Exception) else AsyncMock(return_value=sarvam_reply)
     transport = ASGITransport(app=app)
-    with patch.object(ollama_client, "generate_json", new=AsyncMock(return_value=chat)):
+    with patch.object(ollama_client, "generate_json", new=AsyncMock(return_value=gemma)),          patch.object(sarvam_service, "chat", new=mock):
         async with AsyncClient(transport=transport, base_url="http://test") as client:
             res = await client.post("/api/assistant/interpret", json={"text": "നമസ്കാരം, സുഖമാണോ?", "language": "ml"})
-    assert res.json()["intent"] == "general_qa"
-    assert "കൂടെയുണ്ട്" in res.json()["spoken_response"] and "കേൾപ്പെടെ" not in res.json()["spoken_response"]
+    body = res.json()
+    assert body["intent"] == "general_qa" and expect in body["spoken_response"]
+    assert "കേൾപ്പെടെ" not in body["spoken_response"]
 
 
 @pytest.mark.parametrize("text", ["Remind me to call Lakshmi", "മകളെ വിളിക്കാൻ ഓർമ്മിപ്പിക്കൂ"])

@@ -2,6 +2,7 @@ import re
 from datetime import datetime
 from fastapi import APIRouter, HTTPException, status
 from ..schemas.assistant import AssistantInterpretRequest, AssistantInterpretResponse, ReminderIntentData
+from ..services.sarvam_service import sarvam_service, SarvamServiceError
 from ..services.ollama_client import ollama_client, OllamaServiceError
 from ..services.prompt_templates import get_assistant_interpret_prompt
 
@@ -170,9 +171,15 @@ async def interpret_assistant_request(request: AssistantInterpretRequest):
                 clarification_prompt = "ഏത് സമയത്താണ് ഓർമ്മിപ്പിക്കേണ്ടത് എന്ന് പറയാമോ?"
                 spoken_response = clarification_prompt
         else:
-            # Open-ended chat: the model's Malayalam is not trustworthy (fluent-looking but often meaningless),
-            # so give a fixed, correct, warm reply instead of generated text.
+            # Open-ended chat. Gemma's Malayalam is not trustworthy, so Sarvam's chat model writes the reply; it must
+            # pass the script-purity check, otherwise (or if Sarvam is unavailable) a fixed, correct, warm reply is used.
             spoken_response = _ML_FALLBACK_CHAT
+            try:
+                reply = await sarvam_service.chat(request.text, "ml")
+                if _clean_malayalam(reply):
+                    spoken_response = reply
+            except (SarvamServiceError, Exception):  # noqa: BLE001 - never let chat flavour break the assistant
+                pass
 
     return AssistantInterpretResponse(
         intent=intent,

@@ -203,4 +203,38 @@ class SarvamService:
             raise SarvamServiceError("Sarvam returned no audio.") from e
 
 
+    async def chat(self, user_text: str, language: str = "ml") -> str:
+        """Short, warm conversational reply from Sarvam's chat model (writes natural Malayalam; Gemma cannot)."""
+        if not self.is_configured():
+            raise SarvamNotConfiguredError()
+        from sarvamai import SarvamAI  # imported lazily: only needed for chat
+        import asyncio
+
+        system = (
+            "You are Koode, a warm, respectful companion for elderly people in Kerala. "
+            + ("Reply in simple, natural Malayalam." if language == "ml" else "Reply in simple English.")
+            + " Use at most two short sentences. Never give medicine doses or medical diagnoses. "
+            "You have NO access to weather, news, prices, the time or any live information, and you must never guess "
+            "such facts: say kindly that you cannot check it and suggest asking a family member or the news/forecast. "
+            "If the person seems to be in danger, tell them to press the emergency button or call 112."
+        )
+
+        def _call() -> str:
+            client = SarvamAI(api_subscription_key=self.current_api_key)
+            resp = client.chat.completions(
+                model=settings.SARVAM_CHAT_MODEL,
+                messages=[{"role": "system", "content": system}, {"role": "user", "content": user_text[:500]}],
+            )
+            return (resp.choices[0].message.content or "").strip()
+
+        try:
+            return await asyncio.wait_for(asyncio.to_thread(_call), timeout=self.timeout)
+        except asyncio.TimeoutError as te:
+            raise SarvamTimeoutError(f"Sarvam chat timed out after {self.timeout}s.") from te
+        except SarvamServiceError:
+            raise
+        except Exception as e:  # SDK raises its own error types; normalise
+            raise SarvamServiceError(f"Sarvam chat failed: {e}") from e
+
+
 sarvam_service = SarvamService()
