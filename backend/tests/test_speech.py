@@ -106,3 +106,35 @@ def test_codec_suffix_is_stripped_before_sending_to_sarvam():
     from app.services import sarvam_service as mod
     src = inspect.getsource(mod.SarvamService.transcribe_audio)
     assert '.split(";")[0]' in src
+
+
+# ---- text-to-speech (/api/speech/speak) ----
+from unittest.mock import AsyncMock, patch
+from fastapi.testclient import TestClient
+from app.main import app as _app
+from app.services.sarvam_service import sarvam_service, SarvamNotConfiguredError, SarvamQuotaError
+
+_tts_client = TestClient(_app)
+
+
+def test_speak_returns_wav_audio():
+    with patch.object(sarvam_service, "synthesize", new=AsyncMock(return_value=b"RIFFxxxxWAVE")) as m:
+        r = _tts_client.post("/api/speech/speak", json={"text": "നമസ്കാരം", "language": "ml"})
+    assert r.status_code == 200 and r.headers["content-type"] == "audio/wav" and r.content.startswith(b"RIFF")
+    assert m.call_args.args[1] == "ml-IN"
+
+
+def test_speak_maps_english_and_validates_input():
+    with patch.object(sarvam_service, "synthesize", new=AsyncMock(return_value=b"RIFF")) as m:
+        _tts_client.post("/api/speech/speak", json={"text": "hello", "language": "en"})
+    assert m.call_args.args[1] == "en-IN"
+    assert _tts_client.post("/api/speech/speak", json={"text": "", "language": "ml"}).status_code == 422
+    assert _tts_client.post("/api/speech/speak", json={"text": "x" * 501, "language": "ml"}).status_code == 422
+
+
+def test_speak_errors_are_clean_so_the_app_can_fall_back():
+    with patch.object(sarvam_service, "synthesize", new=AsyncMock(side_effect=SarvamNotConfiguredError())):
+        r = _tts_client.post("/api/speech/speak", json={"text": "hi", "language": "en"})
+    assert r.status_code == 503 and r.json()["detail"]["code"]
+    with patch.object(sarvam_service, "synthesize", new=AsyncMock(side_effect=SarvamQuotaError("quota"))):
+        assert _tts_client.post("/api/speech/speak", json={"text": "hi", "language": "en"}).status_code == 429

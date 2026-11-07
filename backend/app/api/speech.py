@@ -1,5 +1,6 @@
 from typing import Optional
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile, status
+from fastapi import APIRouter, File, Form, HTTPException, Response, UploadFile, status
+from pydantic import BaseModel, Field
 from ..schemas.speech import SpeechTranscribeResponse, SpeechServiceStatus
 from ..services.sarvam_service import (
     sarvam_service,
@@ -129,3 +130,29 @@ async def transcribe_audio_endpoint(
                 "suggestion": "Try again or type your request directly."
             }
         )
+
+
+class SpeakRequest(BaseModel):
+    text: str = Field(..., min_length=1, max_length=500)
+    language: str = Field("ml", description="'ml' or 'en'")
+
+
+_TTS_LANG = {"ml": "ml-IN", "en": "en-IN"}
+
+
+@router.post("/speak", responses={200: {"content": {"audio/wav": {}}}})
+async def speak(body: SpeakRequest):
+    """Text-to-speech through Sarvam; returns audio/wav. The app falls back to the browser voice if this fails."""
+    try:
+        audio = await sarvam_service.synthesize(body.text, _TTS_LANG.get(body.language, "en-IN"))
+    except SarvamNotConfiguredError as e:
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail={"code": e.code, "message": e.message, "suggestion": "Set SARVAM_API_KEY."})
+    except SarvamAuthError as e:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail={"code": e.code, "message": e.message, "suggestion": None})
+    except SarvamQuotaError as e:
+        raise HTTPException(status.HTTP_429_TOO_MANY_REQUESTS, detail={"code": e.code, "message": e.message, "suggestion": None})
+    except (SarvamTimeoutError, SarvamServiceUnavailableError) as e:
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail={"code": e.code, "message": e.message, "suggestion": None})
+    except SarvamServiceError as e:
+        raise HTTPException(status.HTTP_502_BAD_GATEWAY, detail={"code": e.code, "message": e.message, "suggestion": None})
+    return Response(content=audio, media_type="audio/wav", headers={"Cache-Control": "private, max-age=3600"})

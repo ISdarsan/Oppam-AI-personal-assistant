@@ -1,3 +1,4 @@
+import base64
 import os
 import io
 import logging
@@ -171,5 +172,35 @@ class SarvamService:
         except Exception as e:
             logger.exception("Unexpected error during Sarvam transcription")
             raise SarvamServiceError(f"Unexpected speech transcription failure: {str(e)}") from e
+
+    async def synthesize(self, text: str, language: str = "ml-IN") -> bytes:
+        """Text-to-speech via Sarvam (Bulbul). Returns WAV bytes. Gives a real Malayalam voice, which most
+        browsers/Windows installs lack."""
+        if not self.is_configured():
+            raise SarvamNotConfiguredError()
+        payload = {
+            "text": text[:500],
+            "target_language_code": language,
+            "model": settings.SARVAM_TTS_MODEL,
+        }
+        headers = {"api-subscription-key": self.current_api_key, "Content-Type": "application/json"}
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                res = await client.post(f"{self.base_url.rstrip('/')}/text-to-speech", json=payload, headers=headers)
+        except httpx.TimeoutException as te:
+            raise SarvamTimeoutError(f"Sarvam text-to-speech timed out after {self.timeout}s.") from te
+        except httpx.ConnectError as ce:
+            raise SarvamServiceUnavailableError("Could not connect to Sarvam AI network.") from ce
+        if res.status_code in (401, 403):
+            raise SarvamAuthError("Sarvam rejected the API key.")
+        if res.status_code == 429:
+            raise SarvamQuotaError("Sarvam quota exceeded.")
+        if res.status_code != 200:
+            raise SarvamServiceError(f"Sarvam text-to-speech failed (HTTP {res.status_code}).")
+        try:
+            return base64.b64decode(res.json()["audios"][0])
+        except (KeyError, IndexError, ValueError, TypeError) as e:
+            raise SarvamServiceError("Sarvam returned no audio.") from e
+
 
 sarvam_service = SarvamService()

@@ -35,6 +35,7 @@ class Settings(BaseModel):
     SARVAM_API_KEY: Optional[str] = os.getenv("SARVAM_API_KEY")
     SARVAM_BASE_URL: str = os.getenv("SARVAM_BASE_URL", "https://api.sarvam.ai")
     SARVAM_MODEL: str = os.getenv("SARVAM_MODEL", "saaras:v4")
+    SARVAM_TTS_MODEL: str = os.getenv("SARVAM_TTS_MODEL", "bulbul:v3")
     SARVAM_DEFAULT_MODE: str = os.getenv("SARVAM_MODE", "transcribe")
     SARVAM_TIMEOUT_SECONDS: float = float(os.getenv("SARVAM_TIMEOUT_SECONDS", "25.0"))
     
