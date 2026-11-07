@@ -97,7 +97,7 @@ Side effects: `HELPER_ON_THE_WAY`, `REQUEST_COMPLETED`, `REQUEST_CANCELLED` noti
                  "description": "Purchase prescribed blood pressure medicine",
                  "priority": "normal", "requires_confirmation": true},
  "source": "ollama",            // or "fallback" (keyword classifier when Ollama is down / output malformed)
- "model_used": "gemma2:2b",     // null for fallback
+ "model_used": "gemma3:4b",     // null for fallback
  "spoken_response": "I understood: Medicine purchase. Please check it and confirm before I ask for help.",
  "created": false}              // ALWAYS false
 ```

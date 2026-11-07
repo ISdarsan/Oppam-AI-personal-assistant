@@ -25,8 +25,11 @@ class Settings(BaseModel):
     
     # Ollama open-weight AI configuration
     OLLAMA_BASE_URL: str = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-    OLLAMA_MODEL: str = os.getenv("OLLAMA_MODEL", "gemma2:2b")
-    OLLAMA_TIMEOUT_SECONDS: float = float(os.getenv("OLLAMA_TIMEOUT_SECONDS", "30.0"))
+    OLLAMA_MODEL: str = os.getenv("OLLAMA_MODEL", "gemma3:4b")
+    # Gemma 3 4B needs ~50s for the very first (cold) load on a laptop; warm calls take a few seconds.
+    OLLAMA_TIMEOUT_SECONDS: float = float(os.getenv("OLLAMA_TIMEOUT_SECONDS", "90.0"))
+    OLLAMA_KEEP_ALIVE: str = os.getenv("OLLAMA_KEEP_ALIVE", "30m")  # keep the model loaded between requests
+    OLLAMA_NUM_PREDICT: int = int(os.getenv("OLLAMA_NUM_PREDICT", "400"))  # cap output tokens (JSON replies are short)
     
     # Sarvam AI Speech-to-Text configuration
     SARVAM_API_KEY: Optional[str] = os.getenv("SARVAM_API_KEY")

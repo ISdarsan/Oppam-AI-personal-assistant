@@ -114,7 +114,7 @@ async def verify_ollama_live():
     print("=" * 60)
 
     base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434").rstrip("/")
-    model = os.getenv("OLLAMA_MODEL", "gemma2:2b")
+    model = os.getenv("OLLAMA_MODEL", "gemma3:4b")
     print(f"[OLLAMA LIVE] Target Base URL: {base_url}")
     print(f"[OLLAMA LIVE] Configured Model: {model}")
 

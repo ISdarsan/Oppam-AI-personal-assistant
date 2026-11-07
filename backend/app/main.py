@@ -1,14 +1,18 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .core.config import settings
+import asyncio
 from contextlib import asynccontextmanager
+from .services.ollama_client import ollama_client
 from .api import health, assistant, explainer, speech, demo, community, family, sos, ai_requests
 from .db import init_db
 
 @asynccontextmanager
 async def lifespan(_app):
     init_db()
+    warm = asyncio.create_task(ollama_client.warm_up())  # non-blocking: server starts immediately
     yield
+    warm.cancel()
 
 app = FastAPI(
     title=settings.APP_NAME,

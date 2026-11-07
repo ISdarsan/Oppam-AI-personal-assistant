@@ -72,6 +72,15 @@ class OllamaClient:
                 "message": f"Error connecting to Ollama: {str(e)}"
             }
 
+    async def warm_up(self) -> None:
+        """Best-effort background load of the model so the first real request isn't a cold start."""
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                await client.post(f"{self.base_url}/api/generate",
+                                  json={"model": self.model, "prompt": "", "keep_alive": settings.OLLAMA_KEEP_ALIVE, "stream": False})
+        except Exception:
+            pass  # Ollama down or model missing: requests will fall back / report 503 on their own
+
     async def generate_json(self, prompt: str) -> Dict[str, Any]:
         """Send prompt to Ollama with format='json' and parse JSON response."""
         url = f"{self.base_url}/api/generate"
@@ -80,8 +89,10 @@ class OllamaClient:
             "prompt": prompt,
             "stream": False,
             "format": "json",
+            "keep_alive": settings.OLLAMA_KEEP_ALIVE,
             "options": {
                 "temperature": 0.1,  # Low temperature for deterministic output
+                "num_predict": settings.OLLAMA_NUM_PREDICT,
             }
         }
 
@@ -101,13 +112,19 @@ class OllamaClient:
                 cleaned = re.sub(r"\s*```$", "", cleaned, flags=re.MULTILINE).strip()
 
                 try:
-                    return json.loads(cleaned)
+                    parsed = json.loads(cleaned)
                 except json.JSONDecodeError as jde:
                     # Attempt to find the first '{' and last '}'
                     match = re.search(r"(\{.*\})", cleaned, re.DOTALL)
-                    if match:
-                        return json.loads(match.group(1))
-                    raise OllamaServiceError(f"Failed to parse model output as JSON: {raw_text[:200]}") from jde
+                    try:
+                        parsed = json.loads(match.group(1)) if match else None
+                    except json.JSONDecodeError:
+                        parsed = None
+                    if parsed is None:
+                        raise OllamaServiceError(f"Failed to parse model output as JSON: {raw_text[:200]}") from jde
+                if not isinstance(parsed, dict):
+                    raise OllamaServiceError(f"Model returned JSON that is not an object: {raw_text[:200]}")
+                return parsed
 
         except httpx.ConnectError as ce:
             raise OllamaServiceError(f"Cannot connect to local Ollama at {self.base_url}. Is Ollama running?") from ce

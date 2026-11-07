@@ -16,7 +16,7 @@ npm run dev                                     # http://localhost:5173 ; /api i
 ```
 Use **relative** URLs (`fetch('/api/...')`). Swagger UI: `http://localhost:8000/docs`. The SQLite file `backend/data/koode.db` is created automatically and is git-ignored, so everyone's data is local; delete it to reset the demo.
 
-Optional AI: `ollama pull gemma2:2b`. Without it everything still works; `interpret-request` just returns `"source": "fallback"`.
+AI: `ollama pull gemma3:4b` (see [GEMMA_SETUP.md](GEMMA_SETUP.md)). Without it everything still works; `interpret-request` just returns `"source": "fallback"`.
 
 ## 1. Demo login and Authorization header
 
@@ -104,8 +104,8 @@ All errors: `{"detail":{"code","message","suggestion"}}` (request-validation `42
 2. **Timestamps have no `Z`** but are UTC. Parse with `new Date(ts + 'Z')`.
 3. **Empty `family/updates`** usually means the connection is still `PENDING` (senior hasn't approved) or was revoked.
 4. **Helpers only see OPEN requests and their own.** Fetching someone else's accepted request returns `403`, not data. Family cannot call `GET /community/requests` (`403`); use `/family/updates`.
-5. **Existing `/api/assistant/interpret` still returns `503 AI_UNAVAILABLE`** if the Ollama model (`gemma2:2b`) isn't pulled; this is existing behaviour. The new `/ai/interpret-request` falls back instead.
-6. **Gemma is slow on first call** (model load). `OLLAMA_TIMEOUT_SECONDS` defaults to 30 s; after that the fallback draft is returned.
+5. **Existing `/api/assistant/interpret`** uses the same model (`gemma3:4b`). It still returns `503 AI_UNAVAILABLE` if Ollama is unreachable or the model isn't pulled (show the existing "assistant offline" notice); the new `/ai/interpret-request` falls back to keywords instead.
+6. **Gemma is slow only on a cold start** (~50 s model load). The backend now warms it at startup and keeps it loaded for 30 min; timeout is 90 s. Warm calls take ~3 s, so show a spinner. Malayalam input works, but the AI's title/description come back in English.
 7. **Login is not security.** No passwords; anyone can become any user. Don't present helpers as "verified".
 8. **Data is shared and persistent** (`backend/data/koode.db`). Use fresh names for a clean demo, or delete the file.
 9. No pagination on lists (requests are capped by demo scale; notifications at 100, family updates at 50 requests / 20 SOS).

@@ -1,11 +1,11 @@
 # Koode AI (കൂടെ AI)
 
 > **"Always by your side • എന്നും കൂടെയുണ്ട്"**  
-> An elder-supportive, voice-first companion app engineered for older adults. Built with open-weight AI (Google Gemma 2) and Sarvam AI voice transcription.
+> An elder-supportive, voice-first companion app engineered for older adults. Built with open-weight AI (Google Gemma 3) and Sarvam AI voice transcription.
 
 [![Hacktoberfest 2026](https://img.shields.io/badge/Hacktoberfest-2026-orange.svg)](https://dev.to/challenges/hf26)
 [![DEV Challenge](https://img.shields.io/badge/DEV_Challenge-Week_3-blue.svg)](https://dev.to/t/devchallenge)
-[![Model](https://img.shields.io/badge/Model-Gemma_2:2b-green.svg)](https://ai.google.dev/gemma)
+[![Model](https://img.shields.io/badge/Model-Gemma_3_4B-green.svg)](https://ai.google.dev/gemma)
 [![Voice STT](https://img.shields.io/badge/Voice_STT-Sarvam_AI_Saaras_v4-purple.svg)](https://sarvam.ai)
 [![License](https://img.shields.io/badge/License-MIT-teal.svg)](LICENSE)
 
@@ -17,7 +17,7 @@ Most modern mobile apps and AI chatbots fail older adults: fonts are small, inte
 
 **Koode AI (കൂടെ AI)** is an accessible digital companion designed with senior ergonomics:
 * **Voice-First in Malayalam & English:** Seniors speak naturally; Sarvam AI (`saaras:v4`) converts dialect speech into text.
-* **Open-Weight Gemma 2 Intelligence:** Google's open-weight Gemma 2 (`gemma2:2b`) model interprets elder requests, extracts structured reminder intents, and explains confusing messages.
+* **Open-Weight Gemma 3 Intelligence:** Google's open-weight Gemma 3 (`gemma3:4b`) model interprets elder requests, extracts structured reminder intents, and explains confusing messages.
 * **Cognitive Reassurance Timestamps:** Marking a pill complete records an explicit timestamp (e.g., *"✓ Done at 8:15 PM"*), preventing double-dosing anxiety.
 * **Scam & Notice Explainer:** Breaks down confusing hospital discharge notices or bank SMS into plain words and actively flags OTP/KYC scam red flags.
 * **1-Tap Direct Family Hub:** Native `tel:` calling, 1-tap WhatsApp chat with polite pre-composed help requests, and an Emergency SOS broadcast.
@@ -29,8 +29,8 @@ Most modern mobile apps and AI chatbots fail older adults: fonts are small, inte
 
 Koode AI was built for the **Hacktoberfest 2026 DEV Challenge** (*"Build something with open-source AI at its core"*), competing in the **Best Use of Gemma** category.
 
-1. **Complete Privacy for Vulnerable Adults:** Medication schedules, doctor appointments, and family phone numbers are highly sensitive. By running Google Gemma 2 locally via Ollama, personal data never leaves the senior's machine.
-2. **Zero Recurring Cost:** Older adults living on pensions should never worry about monthly API subscriptions or usage metering. Gemma 2 runs entirely free on open-weight inference.
+1. **Complete Privacy for Vulnerable Adults:** Medication schedules, doctor appointments, and family phone numbers are highly sensitive. By running Google Gemma 3 locally via Ollama, personal data never leaves the senior's machine.
+2. **Zero Recurring Cost:** Older adults living on pensions should never worry about monthly API subscriptions or usage metering. Gemma 3 runs entirely free on open-weight inference.
 3. **Resilience & Offline Operation:** When network connections fail, Koode AI remains 100% operational: local reminders, calendar views, contacts, text scaling, and emergency phone calls continue working seamlessly without cloud dependency.
 
 ---
@@ -54,7 +54,7 @@ Koode AI was built for the **Hacktoberfest 2026 DEV Challenge** (*"Build somethi
                     │                                │
 ┌───────────────────▼───────────┐    ┌───────────────▼───────────────────┐
 │       Sarvam AI Cloud         │    │           Ollama Host             │
-│   Model: Saaras v4 (ml-IN)    │    │      Model: Google Gemma 2:2b     │
+│   Model: Saaras v4 (ml-IN)    │    │      Model: Google Gemma 3 4B     │
 │   Accurate Malayalam Speech   │    │  Private, On-Device Intent Logic  │
 └───────────────────────────────┘    └───────────────────────────────────┘
 ```
@@ -65,7 +65,7 @@ Koode AI was built for the **Hacktoberfest 2026 DEV Challenge** (*"Build somethi
 
 | Feature | Description | Elder Accessibility Focus |
 |---|---|---|
-| **Voice-First Assistant** | Speak instructions (e.g. *"Remind me to take my pressure pill at 8 PM"*). Sarvam AI transcribes audio; Gemma 2 extracts structured intents. | Reviewable transcript before processing; large 128px microphone button. |
+| **Voice-First Assistant** | Speak instructions (e.g. *"Remind me to take my pressure pill at 8 PM"*). Sarvam AI transcribes audio; Gemma 3 extracts structured intents. | Reviewable transcript before processing; large 128px microphone button. |
 | **Smart Reminders** | Category badges (💊 Medicine, 🩺 Doctor, 📞 Call, 💧 Water, 📋 Task). Chronological overdue & today filters. | Exact *"✓ Done at 8:15 PM"* completion stamps; audio chime feedback. |
 | **Message Explainer** | 4-part breakdown: *In Simple Words*, *Important Details*, *What You Need to Do*, and *Safety & Scam Alert*. | Integrated Web Speech Synthesis (0.8x calm speaking rate). |
 | **Family & SOS Hub** | 1-tap Phone Calling (`tel:`), instant WhatsApp chat (`wa.me`), and High-Visibility Emergency SOS bar. | Physical haptic vibration pulses (`navigator.vibrate`) on tap. |
@@ -79,7 +79,7 @@ Koode AI was built for the **Hacktoberfest 2026 DEV Challenge** (*"Build somethi
 ### Prerequisites
 - Node.js 18+ & npm
 - Python 3.10+ (tested on Python 3.13)
-- [Ollama](https://ollama.ai/) with `gemma2:2b`
+- [Ollama](https://ollama.ai/) with `gemma3:4b`
 - Sarvam AI API subscription key from [sarvam.ai](https://sarvam.ai)
 
 ---
@@ -92,8 +92,8 @@ Configure your `.env` file:
 ```env
 # Local Gemma Reasoning AI (Ollama)
 OLLAMA_BASE_URL=http://localhost:11434
-OLLAMA_MODEL=gemma2:2b
-OLLAMA_TIMEOUT_SECONDS=30.0
+OLLAMA_MODEL=gemma3:4b
+OLLAMA_TIMEOUT_SECONDS=90.0
 
 # Sarvam AI Cloud Speech-to-Text
 SARVAM_API_KEY=your_sarvam_api_key_here
@@ -137,13 +137,13 @@ Open `http://localhost:5173` in your browser.
 
 ---
 
-### 4. Running Gemma 2 Locally
+### 4. Running Gemma 3 Locally
 
-In a terminal, start Ollama and pull Gemma 2:
+In a terminal, start Ollama and pull Gemma 3:
 
 ```powershell
 ollama serve
-ollama run gemma2:2b
+ollama pull gemma3:4b
 ```
 
 > **Note:** If Ollama is offline, Koode AI displays an honest status notice while keeping all manual reminder, explainer, contacts, and voice features functional.
@@ -178,7 +178,7 @@ npm test
 ```powershell
 python backend\tests\integration_test_live.py
 ```
-* Authenticates and verifies real round-trip connectivity to Sarvam AI (`saaras:v4`) and local Ollama (`gemma2:2b`).
+* Authenticates and verifies real round-trip connectivity to Sarvam AI (`saaras:v4`) and local Ollama (`gemma3:4b`).
 
 ### Production Build
 ```powershell

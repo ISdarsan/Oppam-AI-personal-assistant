@@ -6,6 +6,15 @@ from ..services.prompt_templates import get_assistant_interpret_prompt
 
 router = APIRouter(prefix="/assistant", tags=["Assistant"])
 
+VALID_INTENTS = {"create_reminder", "view_reminders", "explain_message", "general_qa", "clarification_needed", "unknown"}
+
+
+def _safe_confidence(value) -> float:
+    try:
+        return min(1.0, max(0.0, float(value)))
+    except (TypeError, ValueError):
+        return 0.95
+
 @router.post("/interpret", response_model=AssistantInterpretResponse)
 async def interpret_assistant_request(request: AssistantInterpretRequest):
     """
@@ -35,8 +44,12 @@ async def interpret_assistant_request(request: AssistantInterpretRequest):
 
     # Validate and structure the output
     intent = raw_output.get("intent", "unknown")
+    if intent not in VALID_INTENTS:
+        intent = "unknown"
     spoken_response = raw_output.get("spoken_response") or "I heard you, but let us verify."
     reminder_data_raw = raw_output.get("reminder_data")
+    if not isinstance(reminder_data_raw, dict):
+        reminder_data_raw = None
     clarification_prompt = raw_output.get("clarification_prompt")
 
     parsed_reminder: ReminderIntentData | None = None
@@ -47,6 +60,10 @@ async def interpret_assistant_request(request: AssistantInterpretRequest):
         category_val = reminder_data_raw.get("category") or "general"
         if category_val not in ["medicine", "doctor", "call", "water", "general"]:
             category_val = "general"
+
+        # A time without a date means "today" (as the prompt instructs); don't leave the date blank.
+        if time_val and not date_val:
+            date_val = ref_time[:10]
 
         missing = []
         if not time_val:
@@ -80,5 +97,5 @@ async def interpret_assistant_request(request: AssistantInterpretRequest):
         reminder_data=parsed_reminder,
         clarification_prompt=clarification_prompt,
         model_used=ollama_client.model,
-        confidence=float(raw_output.get("confidence", 0.95))
+        confidence=_safe_confidence(raw_output.get("confidence"))
     )
