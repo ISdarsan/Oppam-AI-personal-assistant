@@ -31,10 +31,15 @@ import { triggerHapticFeedback } from '../utils/communication';
 
 interface AssistantPageProps {
   onReminderSaved?: () => void;
+  /** Offered when the senior's words sound like a request for community help; never sent automatically. */
+  onRequestHelp?: (text: string) => void;
 }
 
-export const AssistantPage: React.FC<AssistantPageProps> = ({ onReminderSaved }) => {
-  const { language, settings, t } = useLanguage();
+const HELP_HINT =
+  /(buy|bring|fetch|pick up|take me|take her|take him|someone to|help me|need help|groceries|medicine|hospital|bank|ration|ride|taxi)|(വാങ്ങ|സഹായം|ആശുപത്രി|മരുന്ന്|പലചരക്ക്|ബാങ്ക്|യാത്ര|കൊണ്ടുപോ|റേഷൻ)/i;
+
+export const AssistantPage: React.FC<AssistantPageProps> = ({ onReminderSaved, onRequestHelp }) => {
+  const { language, settings, t, tx } = useLanguage();
   const [inputText, setInputText] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [lastResponse, setLastResponse] = useState<AssistantResponse | null>(null);
@@ -542,6 +547,20 @@ export const AssistantPage: React.FC<AssistantPageProps> = ({ onReminderSaved })
             </p>
           )}
         </Card>
+      )}
+
+      {/* Handoff: offer (never auto-send) a community help request */}
+      {onRequestHelp && lastResponse && !pendingReminder && lastResponse.intent !== 'create_reminder' && HELP_HINT.test(inputText) && (
+        <div className="rounded-3xl bg-brand-sage border-2 border-brand-forest p-5 flex flex-col gap-3">
+          <p className="text-xl font-bold text-brand-forest">{tx('handoffQ')}</p>
+          <button
+            type="button"
+            onClick={() => onRequestHelp(inputText.trim())}
+            className="min-h-[56px] rounded-2xl bg-brand-coral hover:bg-brand-coralDark text-white text-lg font-bold px-6 cursor-pointer"
+          >
+            {tx('handoffBtn')}
+          </button>
+        </div>
       )}
     </div>
   );

@@ -1,3 +1,15 @@
+import { session } from './session';
+import {
+  AppNotification,
+  CommunityRequest,
+  FamilyConnection,
+  FamilyUpdates,
+  HelpDraft,
+  InterpretRequestResult,
+  Role,
+  SessionUser,
+  SosEvent,
+} from '../types/community';
 import {
   AssistantResponse,
   ExplainResponse,
@@ -28,7 +40,71 @@ const SARVAM_LANG_MAP: Record<string, string> = {
   kn: 'kn-IN',
 };
 
+/** Authenticated JSON call to the community backend. A 401 means the session is stale: sign the user out. */
+async function authed<T>(method: string, path: string, body?: unknown): Promise<T> {
+  const user = session.get();
+  let res: Response;
+  try {
+    res = await fetch(`/api${path}`, {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(user ? { Authorization: `Bearer ${user.token}` } : {}),
+      },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+  } catch {
+    throw new ApiError('Cannot reach the Koode server.', 'CONNECTION_ERROR', 'Check that the backend is running.');
+  }
+  if (!res.ok) {
+    let detail: { code?: string; message?: string; suggestion?: string } = {};
+    try {
+      const data = await res.json();
+      detail = Array.isArray(data.detail) ? { message: data.detail[0]?.msg } : data.detail || {};
+    } catch {
+      /* non-JSON error body */
+    }
+    if (res.status === 401 && user) session.clear();
+    throw new ApiError(
+      detail.message || `Request failed (HTTP ${res.status})`,
+      detail.code || `HTTP_${res.status}`,
+      detail.suggestion
+    );
+  }
+  return (await res.json()) as T;
+}
+
 export const api = {
+  // ---- Community backend ----
+  login: (name: string, role: Role, area?: string) =>
+    authed<SessionUser>('POST', '/demo/login', { name, role, ...(area ? { area } : {}) }),
+  interpretRequest: (text: string, language: string) =>
+    authed<InterpretRequestResult>('POST', '/ai/interpret-request', { text, language }),
+  createRequest: (draft: HelpDraft) =>
+    authed<CommunityRequest>('POST', '/community/requests', {
+      title: draft.title,
+      category: draft.category,
+      description: draft.description,
+      priority: draft.priority,
+    }),
+  listRequests: () => authed<{ requests: CommunityRequest[]; count: number }>('GET', '/community/requests'),
+  acceptRequest: (id: string) => authed<CommunityRequest>('POST', `/community/requests/${id}/accept`),
+  setRequestStatus: (id: string, status: 'ON_THE_WAY' | 'COMPLETED' | 'CANCELLED') =>
+    authed<CommunityRequest>('PATCH', `/community/requests/${id}/status`, { status }),
+  createInvitation: () => authed<{ connection_id: number; code: string; status: string }>('POST', '/family/invitation'),
+  linkWithCode: (code: string) => authed<FamilyConnection>('POST', '/family/link', { code }),
+  approveLink: (connection_id: number, approve: boolean) =>
+    authed<FamilyConnection>('POST', '/family/approve', { connection_id, approve }),
+  revokeLink: (connection_id: number) => authed<FamilyConnection>('POST', '/family/revoke', { connection_id }),
+  linkedConnections: () => authed<{ connections: FamilyConnection[]; count: number }>('GET', '/family/linked-senior'),
+  familyUpdates: () => authed<FamilyUpdates>('GET', '/family/updates'),
+  triggerSos: (message?: string) => authed<SosEvent>('POST', '/sos', message ? { message } : {}),
+  listSos: () => authed<{ events: SosEvent[]; count: number }>('GET', '/sos'),
+  acknowledgeSos: (id: string) => authed<SosEvent>('POST', `/sos/${id}/acknowledge`),
+  notifications: () => authed<{ notifications: AppNotification[]; unread_count: number }>('GET', '/notifications'),
+  markNotificationRead: (id: string) => authed<AppNotification>('PATCH', `/notifications/${id}/read`),
+
+  // ---- Existing local-first endpoints ----
   async getHealth(): Promise<HealthStatus> {
     try {
       const res = await fetch('/api/health');
@@ -41,7 +117,7 @@ export const api = {
         status: 'unavailable',
         ollama_connected: false,
         model_available: false,
-        configured_model: 'gemma2:2b',
+        configured_model: 'gemma3:4b',
         available_models: [],
         sarvam_configured: false,
         sarvam_model: 'saaras:v4',

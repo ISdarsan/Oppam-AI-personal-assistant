@@ -7,6 +7,22 @@ export default {
   theme: {
     extend: {
       colors: {
+        brand: {
+          ivory: '#FBF7EF',
+          paper: '#FFFDF8',
+          forest: '#1F4D3A',
+          forestDark: '#163829',
+          sage: '#DCE8DD',
+          sageDark: '#B9D0BE',
+          coral: '#C2410C',
+          coralDark: '#9A3412',
+          coralSoft: '#FDEBDD',
+          ink: '#1F2A24',
+          muted: '#4B5A51',
+          line: '#E4DDCF',
+          sos: '#B42318',
+          sosSoft: '#FEE4E2',
+        },
         koode: {
           bg: '#FBF9F5',
           cream: '#F3EFE6',
@@ -46,6 +62,8 @@ export default {
       },
       fontFamily: {
         sans: [
+          '"Noto Sans Malayalam"',
+          '"Nirmala UI"',
           'system-ui',
           '-apple-system',
           'BlinkMacSystemFont',

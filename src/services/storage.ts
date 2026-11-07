@@ -5,7 +5,7 @@ const REMINDERS_KEY = 'koode_reminders';
 const CONTACTS_KEY = 'koode_contacts';
 
 const DEFAULT_SETTINGS: UserSettings = {
-  language: 'en',
+  language: 'ml',
   displayName: '',
   textSize: 'normal',
   autoSpeak: true,

@@ -256,7 +256,7 @@ export const SettingsPage: React.FC = () => {
               {t('settingsModelInfo')}
             </span>
             <code className="text-lg font-black bg-white px-3.5 py-1.5 rounded-xl border-2 border-stone-300 text-emerald-900 font-mono">
-              {health?.configured_model || 'gemma2:2b'}
+              {health?.configured_model || 'gemma3:4b'}
             </code>
           </div>
 
@@ -285,7 +285,7 @@ export const SettingsPage: React.FC = () => {
             <div className="bg-white rounded-2xl p-5 border-2 border-stone-200 text-base text-emerald-950 font-mono">
               <p className="font-black mb-1.5 font-sans text-emerald-900">To start local AI:</p>
               <code>1. ollama serve</code><br />
-              <code>2. ollama run gemma2:2b</code>
+              <code>2. ollama run gemma3:4b</code>
             </div>
           )}
         </div>

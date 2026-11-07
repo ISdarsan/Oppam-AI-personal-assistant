@@ -7,6 +7,7 @@ import { storage } from '../services/storage';
 describe('DashboardPage', () => {
   beforeEach(() => {
     localStorage.clear();
+    localStorage.setItem('koode_settings', JSON.stringify({ language: 'en' }));
     vi.restoreAllMocks();
   });
 

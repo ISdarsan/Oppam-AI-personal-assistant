@@ -6,6 +6,7 @@ import { LanguageProvider } from '../i18n/LanguageContext';
 describe('ContactsPage', () => {
   beforeEach(() => {
     localStorage.clear();
+    localStorage.setItem('koode_settings', JSON.stringify({ language: 'en' }));
   });
 
   it('renders contacts list with default trusted contact and call button', () => {

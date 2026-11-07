@@ -157,6 +157,7 @@ The FastAPI backend now includes a shared SQLite database (`backend/data/koode.d
 * Full endpoint contract and examples: [`docs/PERSON_A_API_CONTRACT.md`](docs/PERSON_A_API_CONTRACT.md)
 * Run backend tests: `.\.venv\Scripts\pytest backend	ests -v --ignore=backend	ests\integration_test_live.py`
 * Demo login has no passwords and is not production authentication.
+* **Three-role demo (Malayalam by default), step-by-step script:** [`docs/DEMO_GUIDE.md`](docs/DEMO_GUIDE.md). Gemma/Malayalam notes: [`docs/GEMMA_SETUP.md`](docs/GEMMA_SETUP.md).
 
 ---
 

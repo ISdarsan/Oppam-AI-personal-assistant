@@ -7,6 +7,7 @@ import { api } from '../services/api';
 describe('ExplainerPage', () => {
   beforeEach(() => {
     localStorage.clear();
+    localStorage.setItem('koode_settings', JSON.stringify({ language: 'en' }));
     vi.restoreAllMocks();
   });
 

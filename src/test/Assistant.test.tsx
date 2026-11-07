@@ -8,6 +8,7 @@ import { storage } from '../services/storage';
 describe('AssistantPage', () => {
   beforeEach(() => {
     localStorage.clear();
+    localStorage.setItem('koode_settings', JSON.stringify({ language: 'en' }));
     vi.restoreAllMocks();
   });
 

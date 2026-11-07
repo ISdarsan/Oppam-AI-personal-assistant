@@ -21,31 +21,31 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', showText = false, class
         <svg viewBox="0 0 512 512" fill="none" className="w-full h-full" aria-hidden="true">
           <defs>
             <linearGradient id="logoKoodBg" x1="64" y1="32" x2="448" y2="480" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stop-color="#1B4332"/>
-              <stop offset="50%" stop-color="#2D6A4F"/>
-              <stop offset="100%" stop-color="#143626"/>
+              <stop offset="0%" stopColor="#1B4332"/>
+              <stop offset="50%" stopColor="#2D6A4F"/>
+              <stop offset="100%" stopColor="#143626"/>
             </linearGradient>
             <linearGradient id="logoWarmSun" x1="256" y1="120" x2="256" y2="340" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stop-color="#FCD34D"/>
-              <stop offset="100%" stop-color="#F59E0B"/>
+              <stop offset="0%" stopColor="#FCD34D"/>
+              <stop offset="100%" stopColor="#F59E0B"/>
             </linearGradient>
             <linearGradient id="logoHandsGrad" x1="160" y1="200" x2="352" y2="420" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stop-color="#E8F5E9"/>
-              <stop offset="100%" stop-color="#C7E8D6"/>
+              <stop offset="0%" stopColor="#E8F5E9"/>
+              <stop offset="100%" stopColor="#C7E8D6"/>
             </linearGradient>
             <radialGradient id="logoAuraGlow" cx="50%" cy="45%" r="45%">
-              <stop offset="0%" stop-color="#52B788" stop-opacity="0.35"/>
-              <stop offset="100%" stop-color="#1B4332" stop-opacity="0"/>
+              <stop offset="0%" stopColor="#52B788" stopOpacity="0.35"/>
+              <stop offset="100%" stopColor="#1B4332" stopOpacity="0"/>
             </radialGradient>
           </defs>
 
           {/* Squircle Base */}
           <rect width="512" height="512" rx="128" fill="url(#logoKoodBg)"/>
-          <rect x="4" y="4" width="504" height="504" rx="124" stroke="#52B788" stroke-width="6" stroke-opacity="0.4"/>
+          <rect x="4" y="4" width="504" height="504" rx="124" stroke="#52B788" strokeWidth="6" strokeOpacity="0.4"/>
 
           {/* Soft Aura & Inner Halo */}
           <circle cx="256" cy="235" r="185" fill="url(#logoAuraGlow)"/>
-          <circle cx="256" cy="235" r="150" fill="#FFFFFF" fill-opacity="0.06" stroke="#52B788" stroke-width="3" stroke-dasharray="10 8" stroke-opacity="0.5"/>
+          <circle cx="256" cy="235" r="150" fill="#FFFFFF" fillOpacity="0.06" stroke="#52B788" strokeWidth="3" strokeDasharray="10 8" strokeOpacity="0.5"/>
 
           {/* Golden Heart & Care Sun */}
           <path d="M256 142 C240 114 200 110 178 132 C154 156 156 194 186 226 C214 256 256 294 256 294 C256 294 298 256 326 226 C356 194 358 156 334 132 C312 110 272 114 256 142 Z" 
@@ -62,7 +62,7 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', showText = false, class
 
           {/* Gentle Smile Curve & Companionship Dots */}
           <g transform="translate(256, 315) scale(0.95)">
-            <path d="M-60 10 C-30 45 30 45 60 10" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round"/>
+            <path d="M-60 10 C-30 45 30 45 60 10" stroke="#FFFFFF" strokeWidth="12" strokeLinecap="round"/>
             <circle cx="-38" cy="-5" r="9" fill="#FFFFFF"/>
             <circle cx="38" cy="-5" r="9" fill="#FFFFFF"/>
           </g>

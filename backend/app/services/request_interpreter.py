@@ -22,6 +22,20 @@ TITLES = {
     Category.other: "Help needed",
 }
 
+# Gemma 3 4B classifies Malayalam well but cannot reliably WRITE it (live tests mixed in Korean/Russian/Romanian
+# fragments). So for Malayalam the title is a fixed, correct Malayalam phrase and the description is the senior's own
+# words; the model only decides the category/priority.
+TITLES_ML = {
+    Category.medicine: "മരുന്ന് വാങ്ങാൻ സഹായം",
+    Category.grocery: "പലചരക്ക് സാധനങ്ങൾ വാങ്ങാൻ സഹായം",
+    Category.hospital_assistance: "ആശുപത്രിയിൽ പോകാൻ സഹായം",
+    Category.transportation: "യാത്രാസഹായം",
+    Category.ration_shop: "റേഷൻ കടയിൽ സഹായം",
+    Category.bank: "ബാങ്ക് സഹായം",
+    Category.government_office: "സർക്കാർ ഓഫീസിൽ സഹായം",
+    Category.other: "സഹായം ആവശ്യമുണ്ട്",
+}
+
 # Order matters: more specific intents first (a hospital trip is hospital_assistance, not plain transportation).
 KEYWORDS: list[tuple[Category, tuple[str, ...]]] = [
     (Category.medicine, ("medicine", "medicines", "tablet", "tablets", "pills", "pharmacy", "medical shop", "insulin",
@@ -82,6 +96,12 @@ def _spoken(interp: InterpretedRequest, language: str) -> str:
     return f"I understood: {interp.title}. Please check it and confirm before I ask for help."
 
 
+def _localize(interp: InterpretedRequest, text: str, language: str) -> InterpretedRequest:
+    if language != "ml":
+        return interp
+    return interp.model_copy(update={"title": TITLES_ML[interp.category], "description": text.strip()[:1000]})
+
+
 async def interpret(text: str, language: str = "en") -> InterpretRequestOut:
     interp: InterpretedRequest | None = None
     source, model = "fallback", None
@@ -98,5 +118,6 @@ async def interpret(text: str, language: str = "en") -> InterpretRequestOut:
         log.info("AI interpretation fell back to keyword classifier: %s", e)
     if interp is None:
         interp = fallback_interpret(text)
+    interp = _localize(interp, text, language)
     return InterpretRequestOut(interpreted=interp, source=source, model_used=model,
                                spoken_response=_spoken(interp, language), created=False)

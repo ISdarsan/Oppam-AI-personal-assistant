@@ -7,6 +7,7 @@ import { storage } from '../services/storage';
 describe('Settings and Language Switching', () => {
   beforeEach(() => {
     localStorage.clear();
+    localStorage.setItem('koode_settings', JSON.stringify({ language: 'en' }));
   });
 
   it('renders settings and allows switching language to Malayalam', () => {
