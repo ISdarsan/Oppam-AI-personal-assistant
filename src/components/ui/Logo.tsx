@@ -72,8 +72,8 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', showText = false, class
       {showText && (
         <div className="flex flex-col">
           <div className="flex items-center gap-2">
-            <span className="text-2xl sm:text-3xl font-black text-emerald-950 tracking-tight">Koode AI</span>
-            <span className="text-base sm:text-lg font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-lg">കൂടെ</span>
+            <span className="text-2xl sm:text-3xl font-black text-emerald-950 tracking-tight">Oppam</span>
+            <span className="text-base sm:text-lg font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-lg">ഒപ്പം</span>
           </div>
           <span className="text-xs sm:text-sm font-semibold text-emerald-800/80">Always by your side • എന്നും കൂടെയുണ്ട്</span>
         </div>

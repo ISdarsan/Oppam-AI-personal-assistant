@@ -48,7 +48,7 @@ export const LoginPage: React.FC = () => {
         <div className="flex flex-wrap items-center justify-between gap-3 mb-8">
           <div className="flex items-center gap-3">
             <Logo size="md" />
-            <span className="text-2xl font-bold text-brand-forest">കൂടെ AI</span>
+            <span className="text-2xl font-bold text-brand-forest">ഒപ്പം</span>
           </div>
           <LanguageSwitcher />
         </div>

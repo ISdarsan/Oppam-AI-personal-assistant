@@ -22,7 +22,7 @@ _ML_CATEGORY_TITLE = {
     "water": "വെള്ളം കുടിക്കുക",
     "general": "ഓർമ്മപ്പെടുത്തൽ",
 }
-_ML_FALLBACK_CHAT = "ഞാൻ കൂടെയുണ്ട്. സഹായം വേണമെങ്കിൽ 'സഹായം ചോദിക്കുക' അമർത്തുക, അല്ലെങ്കിൽ ഇവിടെ പറയൂ."
+_ML_FALLBACK_CHAT = "ഞാൻ ഒപ്പമുണ്ട്. സഹായം വേണമെങ്കിൽ 'സഹായം ചോദിക്കുക' അമർത്തുക, അല്ലെങ്കിൽ ഇവിടെ പറയൂ."
 _FOREIGN_SCRIPT = re.compile(r"[Ѐ-ӿ぀-ヿ㐀-鿿가-힯؀-ۿ]")
 _LATIN_WORD = re.compile(r"[A-Za-z]{3,}")
 _TODAY_ML = re.compile(r"ഇന്ന്.*(എന്തൊക്കെ|എന്ത്).*(ചെയ്യാനുണ്ട്|ചെയ്യണം)|ഇന്നത്തെ ഓർമ്മപ്പെടുത്തലുകൾ|ഓർമ്മപ്പെടുത്തലുകൾ (കാണിക്കൂ|പറയൂ)")
@@ -35,7 +35,7 @@ def _clean_malayalam(text) -> bool:
     """True only if a model reply is safe to show/speak to a Malayalam user."""
     if not isinstance(text, str) or not text.strip():
         return False
-    return not _FOREIGN_SCRIPT.search(text) and not _LATIN_WORD.search(text.replace("AI", "").replace("Koode", ""))
+    return not _FOREIGN_SCRIPT.search(text) and not _LATIN_WORD.search(text.replace("AI", "").replace("Oppam", ""))
 
 
 def _quick_intent(text: str):

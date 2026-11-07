@@ -1,10 +1,10 @@
 // Strings for the role-based community experience. Malayalam is the default; English is the switchable
 // alternative. Other app languages fall back to English for these keys.
 export const koodeEn = {
-  tagline: 'You are never alone. Koode is with you.',
+  tagline: 'You are never alone. Oppam is with you.',
   // login
   loginTitle: 'Who is entering today?',
-  loginSubtitle: 'Enter your name and choose how you will use Koode',
+  loginSubtitle: 'Enter your name and choose how you will use Oppam',
   roleSenior: 'Senior citizen',
   roleSeniorDesc: 'Ask for help, get reminders, stay close to family',
   roleHelper: 'Community helper',
@@ -20,7 +20,7 @@ export const koodeEn = {
   // senior home
   hello: 'Hello',
   askToday: 'What help do you need today?',
-  talkToKoode: 'Talk to Koode',
+  talkToKoode: 'Talk to Oppam',
   talkHint: 'Press the button and speak',
   cardHelp: 'Ask for help',
   cardHelpDesc: 'Medicine, groceries, hospital',
@@ -69,7 +69,7 @@ export const koodeEn = {
   yesRequest: 'Yes, ask for help',
   editBtn: 'Edit',
   back: 'Go back',
-  aiNoteOllama: 'Koode AI understood this. Please check it is right.',
+  aiNoteOllama: 'Oppam understood this. Please check it is right.',
   aiNoteFallback: 'AI is not available, so this was understood in a simple way. Please check it carefully.',
   sentTitle: 'Request sent',
   refLabel: 'Request number',
@@ -133,7 +133,7 @@ export const koodeEn = {
   takenByOther: 'Someone else already accepted this request.',
   seniorLabel: 'Senior',
   verification: 'Verification',
-  notVerified: 'Not verified. Koode does not verify helpers.',
+  notVerified: 'Not verified. Oppam does not verify helpers.',
   // family dashboard
   famTitle: 'Family overview',
   enterCode: "Enter the code your parent gave you",
@@ -153,7 +153,7 @@ export const koodeEn = {
   loading: 'Please wait…',
   retry: 'Try again',
   errorGeneric: 'Something went wrong. Please try again.',
-  offlineHint: 'Cannot reach the Koode server. Check your connection.',
+  offlineHint: 'Cannot reach the Oppam server. Check your connection.',
   cancel: 'Cancel',
   justNow: 'just now',
   minAgo: 'min ago',
@@ -166,7 +166,7 @@ export const koodeEn = {
 export type KoodeKey = keyof typeof koodeEn;
 
 export const koodeMl: Record<KoodeKey, string> = {
-  tagline: 'നിങ്ങൾ ഒറ്റയ്ക്കല്ല, കൂടെയുണ്ട് AI.',
+  tagline: 'നിങ്ങൾ ഒറ്റയ്ക്കല്ല, ഒപ്പമുണ്ട് AI.',
   loginTitle: 'ഇന്ന് ആരാണ് പ്രവേശിക്കുന്നത്?',
   loginSubtitle: 'പേര് നൽകി, നിങ്ങൾ എങ്ങനെ ഉപയോഗിക്കുമെന്ന് തിരഞ്ഞെടുക്കുക',
   roleSenior: 'മുതിർന്ന പൗരൻ',
@@ -183,7 +183,7 @@ export const koodeMl: Record<KoodeKey, string> = {
   signedInAs: 'പ്രവേശിച്ചത്',
   hello: 'നമസ്കാരം',
   askToday: 'ഇന്ന് എന്ത് സഹായമാണ് വേണ്ടത്?',
-  talkToKoode: 'കൂടെ സംസാരിക്കാം',
+  talkToKoode: 'ഒപ്പം സംസാരിക്കാം',
   talkHint: 'ബട്ടൺ അമർത്തി സംസാരിക്കൂ',
   cardHelp: 'സഹായം ചോദിക്കുക',
   cardHelpDesc: 'മരുന്ന്, സാധനങ്ങൾ, ആശുപത്രി',
@@ -231,7 +231,7 @@ export const koodeMl: Record<KoodeKey, string> = {
   yesRequest: 'അതെ, സഹായം ചോദിക്കുക',
   editBtn: 'തിരുത്തുക',
   back: 'തിരികെ പോകുക',
-  aiNoteOllama: 'കൂടെ AI ഇങ്ങനെയാണ് മനസ്സിലാക്കിയത്. ശരിയാണോ എന്ന് നോക്കുക.',
+  aiNoteOllama: 'ഒപ്പം ഇങ്ങനെയാണ് മനസ്സിലാക്കിയത്. ശരിയാണോ എന്ന് നോക്കുക.',
   aiNoteFallback: 'AI ഇപ്പോൾ ലഭ്യമല്ല, അതിനാൽ ലളിതമായി മനസ്സിലാക്കിയതാണ്. ശ്രദ്ധയോടെ പരിശോധിക്കുക.',
   sentTitle: 'അഭ്യർത്ഥന അയച്ചു',
   refLabel: 'അഭ്യർത്ഥന നമ്പർ',
@@ -290,7 +290,7 @@ export const koodeMl: Record<KoodeKey, string> = {
   takenByOther: 'ഈ അഭ്യർത്ഥന മറ്റൊരാൾ ഏറ്റെടുത്തു.',
   seniorLabel: 'മുതിർന്ന വ്യക്തി',
   verification: 'സ്ഥിരീകരണം',
-  notVerified: 'പരിശോധിച്ചിട്ടില്ല. കൂടെ സഹായികളെ പരിശോധിക്കുന്നില്ല.',
+  notVerified: 'പരിശോധിച്ചിട്ടില്ല. ഒപ്പം സഹായികളെ പരിശോധിക്കുന്നില്ല.',
   famTitle: 'കുടുംബ വിവരങ്ങൾ',
   enterCode: 'അച്ഛനമ്മമാർ തന്ന കോഡ് നൽകുക',
   connect: 'ബന്ധപ്പെടുക',
@@ -308,7 +308,7 @@ export const koodeMl: Record<KoodeKey, string> = {
   loading: 'കാത്തിരിക്കൂ…',
   retry: 'വീണ്ടും ശ്രമിക്കുക',
   errorGeneric: 'എന്തോ പിഴച്ചു. വീണ്ടും ശ്രമിക്കുക.',
-  offlineHint: 'കൂടെ സെർവറുമായി ബന്ധപ്പെടാൻ കഴിയുന്നില്ല. ഇന്റർനെറ്റ് പരിശോധിക്കുക.',
+  offlineHint: 'ഒപ്പം സെർവറുമായി ബന്ധപ്പെടാൻ കഴിയുന്നില്ല. ഇന്റർനെറ്റ് പരിശോധിക്കുക.',
   cancel: 'വേണ്ട',
   justNow: 'ഇപ്പോൾ',
   minAgo: 'മിനിറ്റ് മുമ്പ്',

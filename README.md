@@ -1,4 +1,4 @@
-# Koode AI (കൂടെ AI)
+# Oppam (ഒപ്പം)
 
 > **"Always by your side • എന്നും കൂടെയുണ്ട്"**  
 > An elder-supportive, voice-first companion app engineered for older adults. Built with open-weight AI (Google Gemma 3) and Sarvam AI voice transcription.

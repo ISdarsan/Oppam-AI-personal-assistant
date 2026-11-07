@@ -171,8 +171,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate, onOpen
           <h2 className="text-3xl sm:text-4xl font-black tracking-tight">{greetingText}</h2>
           <p className="text-emerald-100 text-lg sm:text-xl mt-2 font-medium max-w-xl leading-relaxed">
             {language === 'ml'
-              ? 'ഇന്ന് കൂടെ (Koode) നിങ്ങൾക്ക് എന്ത് സഹായമാണ് നൽകേണ്ടത്?'
-              : 'How can Koode help you stay safe and comfortable today?'}
+              ? 'ഇന്ന് ഒപ്പം നിങ്ങൾക്ക് എന്ത് സഹായമാണ് നൽകേണ്ടത്?'
+              : 'How can Oppam help you stay safe and comfortable today?'}
           </p>
         </div>
 
@@ -241,9 +241,9 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate, onOpen
         </div>
       )}
 
-      {/* 3. Primary Action Tiles: "Talk to Koode" & "Add Reminder" */}
+      {/* 3. Primary Action Tiles: "Talk to Oppam" & "Add Reminder" */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-        {/* Talk to Koode card */}
+        {/* Talk to Oppam card */}
         <button
           onClick={() => {
             triggerHapticFeedback(40);
@@ -425,7 +425,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate, onOpen
             <p className="text-base sm:text-lg text-amber-950/85 mt-1 max-w-lg font-medium leading-relaxed">
               {language === 'ml'
                 ? 'മനസ്സിലാക്കാൻ പ്രയാസമുള്ള സന്ദേശങ്ങളോ അറിയിപ്പുകളോ ഇവിടെ നൽകുക. കൂടെ ലളിതമായി വിശദീകരിച്ചു തരും.'
-                : 'Received a confusing SMS, bank notice, or hospital prescription? Koode breaks it down in plain words.'}
+                : 'Received a confusing SMS, bank notice, or hospital prescription? Oppam breaks it down in plain words.'}
             </p>
           </div>
         </div>

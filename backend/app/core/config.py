@@ -19,7 +19,7 @@ for candidate in [project_root / ".env", backend_dir / ".env", Path.cwd() / ".en
         break
 
 class Settings(BaseModel):
-    APP_NAME: str = "Koode AI Backend"
+    APP_NAME: str = "Oppam Backend"
     APP_VERSION: str = "1.0.0"
     API_PREFIX: str = "/api"
     

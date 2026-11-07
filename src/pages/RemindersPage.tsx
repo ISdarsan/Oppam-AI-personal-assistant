@@ -409,8 +409,8 @@ export const RemindersPage: React.FC<RemindersPageProps> = ({
       {/* Elder Clinical Reassurance Footer Note */}
       <p className="text-xs sm:text-sm text-stone-500 font-medium text-center px-4 py-3 bg-stone-50 rounded-2xl border border-stone-200">
         {language === 'ml'
-          ? '* മരുന്ന് ഓർമ്മപ്പെടുത്തൽ പൂർത്തിയാക്കിയത് ഉപയോക്താവ് രേഖപ്പെടുത്തിയതാണ്. കൂടെ AI നേരിട്ടുള്ള വൈദ്യപരിശോധന നടത്തുന്നില്ല. എല്ലായ്പ്പോഴും ഡോക്ടറുടെ നിർദ്ദേശങ്ങൾ പാലിക്കുക.'
-          : '* Marking a reminder complete reflects that you acknowledged it in Koode AI. Koode AI does not independently verify physical medication ingestion. Always follow your physician’s official medical prescription.'}
+          ? '* മരുന്ന് ഓർമ്മപ്പെടുത്തൽ പൂർത്തിയാക്കിയത് ഉപയോക്താവ് രേഖപ്പെടുത്തിയതാണ്. ഒപ്പം നേരിട്ടുള്ള വൈദ്യപരിശോധന നടത്തുന്നില്ല. എല്ലായ്പ്പോഴും ഡോക്ടറുടെ നിർദ്ദേശങ്ങൾ പാലിക്കുക.'
+          : '* Marking a reminder complete reflects that you acknowledged it in Oppam. Oppam does not independently verify physical medication ingestion. Always follow your physician’s official medical prescription.'}
       </p>
 
       {/* Add / Edit Reminder Modal */}

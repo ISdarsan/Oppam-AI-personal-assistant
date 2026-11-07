@@ -80,7 +80,7 @@ export const VoiceDock: React.FC<Props> = ({ onCommand }) => {
     ? language === 'ml' ? 'കേൾക്കുന്നു… പറയൂ' : 'Listening… speak now'
     : busy
       ? language === 'ml' ? 'മനസ്സിലാക്കുന്നു…' : 'Understanding…'
-      : language === 'ml' ? 'കൂടെ, ഒന്ന് പറയൂ' : 'Tap and speak';
+      : language === 'ml' ? 'ഒപ്പം, ഒന്ന് പറയൂ' : 'Tap and speak';
 
   const onTap = () => {
     setProblem(null);

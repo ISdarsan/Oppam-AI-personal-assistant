@@ -75,7 +75,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentPage, onNavigat
             aria-label={tx('navHome')}
           >
             <Logo size="md" />
-            <span className="hidden min-[430px]:inline text-xl font-bold text-brand-forest leading-tight">കൂടെ AI</span>
+            <span className="hidden min-[430px]:inline text-xl font-bold text-brand-forest leading-tight">ഒപ്പം</span>
           </button>
 
           <div className="flex items-center gap-1.5">

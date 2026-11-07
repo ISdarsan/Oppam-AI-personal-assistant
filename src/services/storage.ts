@@ -149,7 +149,7 @@ export const storage = {
   // Export & Reset
   exportAllData(): string {
     const exportData = {
-      app: 'Koode AI',
+      app: 'Oppam',
       tagline: 'Always by your side / എന്നും നിങ്ങളുടെ കൂടെ',
       exportedAt: new Date().toISOString(),
       settings: this.getSettings(),

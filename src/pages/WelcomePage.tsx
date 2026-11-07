@@ -46,10 +46,10 @@ export const WelcomePage: React.FC<WelcomePageProps> = ({ onComplete }) => {
           <div>
             <div className="flex items-center justify-center gap-2.5">
               <h1 className="text-3xl sm:text-4xl font-black text-emerald-950 tracking-tight">
-                Koode AI
+                Oppam
               </h1>
               <span className="text-base sm:text-lg font-black bg-emerald-100 text-emerald-950 border border-emerald-300 px-2.5 py-0.5 rounded-xl">
-                കൂടെ
+                ഒപ്പം
               </span>
             </div>
             <p className="text-xl sm:text-2xl text-emerald-900 font-bold mt-1">

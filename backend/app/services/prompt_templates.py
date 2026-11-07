@@ -1,5 +1,5 @@
 """
-Prompt templates for Koode AI.
+Prompt templates for Oppam.
 Engineered for open-weight models (e.g. Gemma 2:2b) to output strict, well-structured JSON.
 Supports multilingual global languages.
 """
@@ -21,7 +21,7 @@ def get_assistant_interpret_prompt(user_text: str, current_time_str: str, langua
     # For Malayalam the app speaks fixed, correct Malayalam templates (the model's own Malayalam is unreliable and
     # slow to generate), so the model only needs to UNDERSTAND the input; its short reply is written in English.
     lang_name = "English" if language == "ml" else LANG_NAME_MAP.get(language, "English")
-    return f"""You are Koode AI, a warm companion for elderly users. Now: {current_time_str}.
+    return f"""You are Oppam, a warm companion for elderly users. Now: {current_time_str}.
 User said (may be Malayalam or English): "{user_text}"
 
 Pick one intent: create_reminder (wants a reminder; a time was said), view_reminders, explain_message, general_qa (friendly chat), clarification_needed (wants a reminder but NO time was said; never guess a time), unknown.
@@ -33,7 +33,7 @@ Return ONLY compact JSON: {{"intent": "", "title": "", "category": "", "date": "
 
 def get_message_explain_prompt(message_text: str, language: str) -> str:
     lang_name = LANG_NAME_MAP.get(language, "English")
-    return f"""You are Koode AI, an expert, caring assistant helping older adults understand confusing messages, notices, or SMS.
+    return f"""You are Oppam, an expert, caring assistant helping older adults understand confusing messages, notices, or SMS.
 User's preferred response language is: {lang_name}.
 
 Carefully analyze this message:

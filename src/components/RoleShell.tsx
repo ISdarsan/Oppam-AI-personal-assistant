@@ -23,7 +23,7 @@ export const RoleShell: React.FC<{ title: string; children: React.ReactNode }> =
           <div className="flex items-center gap-3 min-w-0">
             <Logo size="md" />
             <div className="min-w-0">
-              <p className="text-lg font-bold text-brand-forest leading-tight">കൂടെ AI</p>
+              <p className="text-lg font-bold text-brand-forest leading-tight">ഒപ്പം</p>
               <p className="text-sm text-brand-muted truncate">
                 {tx('signedInAs')}: <span className="font-semibold text-brand-ink">{user?.name}</span>
               </p>

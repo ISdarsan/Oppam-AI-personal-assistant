@@ -20,7 +20,7 @@ const T = {
     idle: 'സംസാരിക്കാൻ അമർത്തൂ',
     listening: 'ഞാൻ കേൾക്കുന്നുണ്ട്...',
     processing: 'ഒരു നിമിഷം...',
-    speaking: 'കൂടെ സംസാരിക്കുന്നു...',
+    speaking: 'ഒപ്പം സംസാരിക്കുന്നു...',
     ack: 'ശരി, ഞാൻ മനസ്സിലാക്കാൻ ശ്രമിക്കുകയാണ്.',
     stopSpeaking: 'സംസാരം നിർത്തുക',
     repeat: 'വീണ്ടും കേൾക്കുക',
@@ -28,9 +28,9 @@ const T = {
     continuous: 'തുടർച്ചയായ സംഭാഷണം',
     noVoice: 'ഈ ഉപകരണത്തിൽ മലയാളം ശബ്ദം ലഭ്യമല്ല. മറുപടി എഴുത്തായി കാണിക്കുന്നു.',
     you: 'നിങ്ങൾ',
-    koode: 'കൂടെ',
+    koode: 'ഒപ്പം',
     empty: 'മൈക്ക് അമർത്തി സംസാരിക്കൂ. ഉദാ: "ഇന്ന് എനിക്ക് എന്തൊക്കെ ചെയ്യാനുണ്ട്?"',
-    aiDown: 'കൂടെ AI ഇപ്പോൾ ലഭ്യമല്ല. ടൈപ്പ് ചെയ്ത് ശ്രമിക്കാം.',
+    aiDown: 'ഒപ്പം ഇപ്പോൾ ലഭ്യമല്ല. ടൈപ്പ് ചെയ്ത് ശ്രമിക്കാം.',
     helpReply: 'ശരി, സഹായം ചോദിക്കാം. താഴെയുള്ള ബട്ടൺ അമർത്തി ശരിയാണോ എന്ന് നോക്കൂ.',
     helpBtn: 'സഹായം ചോദിക്കുക',
     familyReply: 'കുടുംബത്തെ വിളിക്കാൻ കുടുംബ പേജ് തുറക്കാം. അത്യാവശ്യമെങ്കിൽ അടിയന്തര ബട്ടൺ അമർത്തുക.',
@@ -40,7 +40,7 @@ const T = {
     idle: 'Tap to speak',
     listening: 'I am listening...',
     processing: 'One moment...',
-    speaking: 'Koode is speaking...',
+    speaking: 'Oppam is speaking...',
     ack: 'Okay, let me think about that.',
     stopSpeaking: 'Stop speaking',
     repeat: 'Hear again',
@@ -48,9 +48,9 @@ const T = {
     continuous: 'Continuous conversation',
     noVoice: 'No voice for this language is available on this device. The reply is shown as text.',
     you: 'You',
-    koode: 'Koode',
+    koode: 'Oppam',
     empty: 'Tap the mic and speak. For example: "What do I have to do today?"',
-    aiDown: 'Koode AI is not available right now. You can type instead.',
+    aiDown: 'Oppam is not available right now. You can type instead.',
     helpReply: 'Okay, let us ask for help. Press the button below and check the details.',
     helpBtn: 'Ask for help',
     familyReply: 'Let me open the family page so you can call. In an emergency, press the emergency button.',
@@ -135,7 +135,7 @@ export const VoiceConversation: React.FC<Props> = ({ onResponse, onRequestHelp, 
 
   const turn = useVoiceTurn(language, (t) => void handleSpoken(t));
 
-  // Continuous mode: listen again only AFTER Koode has finished speaking (so it never hears its own voice).
+  // Continuous mode: listen again only AFTER Oppam has finished speaking (so it never hears its own voice).
   const wasSpeaking = useRef(false);
   useEffect(() => {
     if (wasSpeaking.current && !isSpeaking && !busy.current && continuousRef.current && lastReply) {
@@ -159,7 +159,7 @@ export const VoiceConversation: React.FC<Props> = ({ onResponse, onRequestHelp, 
     if (phase === 'LISTENING') turn.stop();
     else if (phase === 'SPEAKING') stopSpeech();
     else if (phase === 'IDLE' || phase === 'ERROR') {
-      stopSpeech(); // the mic must never be open while Koode is talking
+      stopSpeech(); // the mic must never be open while Oppam is talking
       turn.start();
     }
   };

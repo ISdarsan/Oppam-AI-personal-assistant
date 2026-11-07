@@ -423,7 +423,7 @@ export const AssistantPage: React.FC<AssistantPageProps> = ({ onReminderSaved, o
         <Card className="bg-white border-2 border-stone-200 p-6 sm:p-8 flex flex-col gap-4 shadow-sm">
           <div className="flex items-center gap-2 text-emerald-800 font-black text-xl">
             <Sparkles className="w-6 h-6" />
-            <span>Koode AI</span>
+            <span>Oppam</span>
           </div>
           <p className="text-2xl text-emerald-950 font-bold leading-relaxed">
             {lastResponse.spoken_response}

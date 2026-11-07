@@ -19,11 +19,11 @@ describe('AssistantPage', () => {
       </LanguageProvider>
     );
 
-    expect(screen.getByText('Talk with Koode')).toBeInTheDocument();
+    expect(screen.getByText('Talk with Oppam')).toBeInTheDocument();
     expect(screen.getByText(/Voice Transcription Notice/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Tap to Speak/i })).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/Remind me to take my medicine/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Ask Koode/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Ask Oppam/i })).toBeInTheDocument();
   });
 
   it('displays structured confirmation card when reminder intent is returned', async () => {
@@ -50,7 +50,7 @@ describe('AssistantPage', () => {
     const input = screen.getByPlaceholderText(/Remind me to take my medicine/i);
     fireEvent.change(input, { target: { value: 'Remind me to call my daughter at 6 PM' } });
 
-    const askBtn = screen.getByRole('button', { name: /Ask Koode/i });
+    const askBtn = screen.getByRole('button', { name: /Ask Oppam/i });
     fireEvent.click(askBtn);
 
     await waitFor(() => {
@@ -88,7 +88,7 @@ describe('AssistantPage', () => {
     const input = screen.getByPlaceholderText(/Remind me to take my medicine/i);
     fireEvent.change(input, { target: { value: 'Remind me to take BP tablet at 8 PM' } });
 
-    fireEvent.click(screen.getByRole('button', { name: /Ask Koode/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Ask Oppam/i }));
 
     await waitFor(() => {
       expect(screen.getByText('Pressure tablet')).toBeInTheDocument();
@@ -111,7 +111,7 @@ describe('AssistantPage', () => {
   it('allows user to edit text before sending to AI', async () => {
     const interpretSpy = vi.spyOn(api, 'interpretAssistant').mockResolvedValue({
       intent: 'general_qa',
-      spoken_response: 'Hello! I am Koode, here to help you.',
+      spoken_response: 'Hello! I am Oppam, here to help you.',
       model_used: 'gemma2:2b',
       confidence: 0.99,
     });
@@ -124,13 +124,13 @@ describe('AssistantPage', () => {
 
     const input = screen.getByPlaceholderText(/Remind me to take my medicine/i) as HTMLTextAreaElement;
     // User types original
-    fireEvent.change(input, { target: { value: 'Hello Koode' } });
+    fireEvent.change(input, { target: { value: 'Hello Oppam' } });
     // User corrects/edits it
-    fireEvent.change(input, { target: { value: 'Good morning Koode' } });
+    fireEvent.change(input, { target: { value: 'Good morning Oppam' } });
 
-    fireEvent.click(screen.getByRole('button', { name: /Ask Koode/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Ask Oppam/i }));
 
-    expect(interpretSpy).toHaveBeenCalledWith('Good morning Koode', 'en', expect.any(String));
+    expect(interpretSpy).toHaveBeenCalledWith('Good morning Oppam', 'en', expect.any(String));
   });
 
   it('displays understandable error message when AI service is unavailable', async () => {
@@ -147,7 +147,7 @@ describe('AssistantPage', () => {
     const input = screen.getByPlaceholderText(/Remind me to take my medicine/i);
     fireEvent.change(input, { target: { value: 'Hello' } });
 
-    const askBtn = screen.getByRole('button', { name: /Ask Koode/i });
+    const askBtn = screen.getByRole('button', { name: /Ask Oppam/i });
     fireEvent.click(askBtn);
 
     await waitFor(() => {

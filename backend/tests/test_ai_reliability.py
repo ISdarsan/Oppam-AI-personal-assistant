@@ -167,8 +167,8 @@ async def test_help_draft_for_malayalam_uses_clean_title_and_original_words():
 
 @pytest.mark.parametrize("sarvam_reply,expect", [
     ("നമസ്കാരം, സുഖമാണോ?", "നമസ്കാരം, സുഖമാണോ?"),        # clean Malayalam from Sarvam is used
-    ("സുഖമാണ് nevoie 약", "കൂടെയുണ്ട്"),                       # foreign-script output -> fixed reply
-    (Exception("sarvam down"), "കൂടെയുണ്ട്"),                  # service failure -> fixed reply
+    ("സുഖമാണ് nevoie 약", "ഒപ്പമുണ്ട്"),                       # foreign-script output -> fixed reply
+    (Exception("sarvam down"), "ഒപ്പമുണ്ട്"),                  # service failure -> fixed reply
 ])
 @pytest.mark.asyncio
 async def test_malayalam_open_chat_uses_sarvam_when_clean_else_fixed_reply(sarvam_reply, expect):

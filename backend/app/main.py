@@ -17,7 +17,7 @@ async def lifespan(_app):
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
-    description="Backend API for Koode AI — A compassionate, multilingual elderly companion powered by Sarvam AI & open-weight Gemma.",
+    description="Backend API for Oppam — A compassionate, multilingual elderly companion powered by Sarvam AI & open-weight Gemma.",
     docs_url="/docs",
     redoc_url="/redoc",
     lifespan=lifespan

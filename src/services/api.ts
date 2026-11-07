@@ -54,7 +54,7 @@ async function authed<T>(method: string, path: string, body?: unknown): Promise<
       body: body === undefined ? undefined : JSON.stringify(body),
     });
   } catch {
-    throw new ApiError('Cannot reach the Koode server.', 'CONNECTION_ERROR', 'Check that the backend is running.');
+    throw new ApiError('Cannot reach the Oppam server.', 'CONNECTION_ERROR', 'Check that the backend is running.');
   }
   if (!res.ok) {
     let detail: { code?: string; message?: string; suggestion?: string } = {};
@@ -178,7 +178,7 @@ export const api = {
     } catch (err) {
       if (err instanceof ApiError) throw err;
       throw new ApiError(
-        'Cannot connect to Koode speech service. Ensure backend is running.',
+        'Cannot connect to Oppam speech service. Ensure backend is running.',
         'SPEECH_CONNECTION_ERROR',
         'Verify backend is running on port 8000.'
       );
@@ -216,7 +216,7 @@ export const api = {
     } catch (err) {
       if (err instanceof ApiError) throw err;
       throw new ApiError(
-        'Cannot connect to Koode AI service. Ensure backend is running.',
+        'Cannot connect to Oppam service. Ensure backend is running.',
         'CONNECTION_ERROR',
         'Run uvicorn backend.app.main:app --reload'
       );
@@ -250,7 +250,7 @@ export const api = {
     } catch (err) {
       if (err instanceof ApiError) throw err;
       throw new ApiError(
-        'Cannot connect to Koode AI service.',
+        'Cannot connect to Oppam service.',
         'CONNECTION_ERROR',
         'Check backend connection.'
       );

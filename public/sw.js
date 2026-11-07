@@ -1,4 +1,4 @@
-// Koode AI Service Worker — Network-First for dynamic updates with offline fallback
+// Oppam Service Worker — Network-First for dynamic updates with offline fallback
 const CACHE_NAME = 'koode-ai-v2';
 const STATIC_ASSETS = [
   '/',
