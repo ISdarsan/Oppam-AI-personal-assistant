@@ -25,9 +25,9 @@ export const SeniorHomePage: React.FC<Props> = ({ onNavigate }) => {
   const active = (data?.requests ?? []).find((r) => r.status !== 'COMPLETED' && r.status !== 'CANCELLED');
 
   const cards: { id: PageView; title: string; desc: string; icon: React.ReactNode; tone: string }[] = [
-    { id: 'help', title: tx('cardHelp'), desc: tx('cardHelpDesc'), icon: <HandHeart className="w-9 h-9" aria-hidden="true" />, tone: 'bg-brand-sage text-brand-forest' },
-    { id: 'reminders', title: tx('cardReminder'), desc: tx('cardReminderDesc'), icon: <BellRing className="w-9 h-9" aria-hidden="true" />, tone: 'bg-brand-sage text-brand-forest' },
-    { id: 'family', title: tx('cardFamily'), desc: tx('cardFamilyDesc'), icon: <HeartHandshake className="w-9 h-9" aria-hidden="true" />, tone: 'bg-brand-sage text-brand-forest' },
+    { id: 'help', title: tx('cardHelp'), desc: tx('cardHelpDesc'), icon: <HandHeart className="w-9 h-9" aria-hidden="true" />, tone: 'bg-brand-coralSoft text-brand-coral' },
+    { id: 'reminders', title: tx('cardReminder'), desc: tx('cardReminderDesc'), icon: <BellRing className="w-9 h-9" aria-hidden="true" />, tone: 'bg-[#E3F1E7] text-brand-forest' },
+    { id: 'family', title: tx('cardFamily'), desc: tx('cardFamilyDesc'), icon: <HeartHandshake className="w-9 h-9" aria-hidden="true" />, tone: 'bg-[#F7EBD2] text-[#8A5A00]' },
     { id: 'explainer', title: tx('cardDocs'), desc: tx('cardDocsDesc'), icon: <FileText className="w-9 h-9" aria-hidden="true" />, tone: 'bg-brand-sage text-brand-forest' },
   ];
 
@@ -45,8 +45,10 @@ export const SeniorHomePage: React.FC<Props> = ({ onNavigate }) => {
         <button
           type="button"
           onClick={() => onNavigate('assistant')}
-          className="relative w-full overflow-hidden rounded-[2rem] bg-brand-forest text-white p-5 sm:p-8 flex items-center gap-4 sm:gap-5 text-left shadow-lg hover:bg-brand-forestDark active:scale-[0.99] transition cursor-pointer"
+          className="relative w-full overflow-hidden rounded-[2rem] bg-gradient-to-br from-brand-forest via-[#25593F] to-[#2F7352] text-white p-5 sm:p-8 flex items-center gap-4 sm:gap-5 text-left shadow-xl hover:shadow-2xl active:scale-[0.99] transition cursor-pointer"
         >
+          <span className="pointer-events-none absolute -right-10 -top-12 w-44 h-44 rounded-full bg-white/10" aria-hidden="true" />
+          <span className="pointer-events-none absolute right-12 -bottom-16 w-36 h-36 rounded-full bg-white/5" aria-hidden="true" />
           <span className="relative shrink-0">
             <span className="absolute inset-0 rounded-full bg-brand-coral/70 animate-pulseRing" aria-hidden="true" />
             <span className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-brand-coral flex items-center justify-center shadow-md">
@@ -73,7 +75,8 @@ export const SeniorHomePage: React.FC<Props> = ({ onNavigate }) => {
             key={c.id}
             type="button"
             onClick={() => onNavigate(c.id)}
-            className="min-h-[92px] rounded-3xl bg-white border-2 border-brand-line p-4 flex items-center gap-4 text-left shadow-sm hover:border-brand-forest active:scale-[0.99] transition cursor-pointer"
+            style={{ animationDelay: `${(cards.indexOf(c) + 1) * 70}ms` }}
+            className="card-lift animate-riseIn min-h-[92px] rounded-3xl bg-white border-2 border-brand-line p-4 flex items-center gap-4 text-left shadow-sm hover:border-brand-forest active:scale-[0.99] cursor-pointer"
           >
             <span className={`w-14 h-14 shrink-0 rounded-2xl flex items-center justify-center ${c.tone}`}>{c.icon}</span>
             <span className="min-w-0 flex-1">
@@ -87,7 +90,7 @@ export const SeniorHomePage: React.FC<Props> = ({ onNavigate }) => {
       <button
         type="button"
         onClick={() => onNavigate('sos')}
-        className="w-full min-h-[84px] rounded-3xl bg-brand-sos text-white px-6 flex items-center gap-4 text-left shadow-md hover:bg-red-900 active:scale-[0.99] transition cursor-pointer"
+        className="card-lift w-full min-h-[84px] rounded-3xl bg-gradient-to-r from-brand-sos to-[#D92D20] text-white px-6 flex items-center gap-4 text-left shadow-md active:scale-[0.99] cursor-pointer"
       >
         <Siren className="w-10 h-10 shrink-0" aria-hidden="true" />
         <span>
@@ -96,7 +99,7 @@ export const SeniorHomePage: React.FC<Props> = ({ onNavigate }) => {
         </span>
       </button>
 
-      <section aria-labelledby="today-rem" className="bg-white rounded-3xl border-2 border-brand-line p-5">
+      <section aria-labelledby="today-rem" className="bg-white/90 rounded-3xl border-2 border-brand-line p-5 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-x-3">
           <h2 id="today-rem" className="min-w-0 text-lg sm:text-xl font-bold text-brand-ink [overflow-wrap:anywhere]">{tx('todayReminders')}</h2>
           <button type="button" onClick={() => onNavigate('reminders')} className="min-h-[44px] px-3 text-lg font-bold text-brand-forest underline cursor-pointer">

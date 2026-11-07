@@ -28,6 +28,8 @@
 
   body {
     background-color: #FBF7EF;
+    background-image: radial-gradient(900px 420px at 50% -80px, #E3EFE3 0%, rgba(251,247,239,0) 70%);
+    background-repeat: no-repeat;
     color: #1F2A24;
     font-family: 'Noto Sans Malayalam', 'Nirmala UI', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans Malayalam', Manjari, sans-serif;
     line-height: 1.6;
@@ -79,6 +81,8 @@
   to { opacity: 1; transform: translateY(0); }
 }
 .animate-pulseRing { animation: pulseRing 1.6s ease-out infinite; }
+.card-lift { transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
+.card-lift:hover { transform: translateY(-2px); box-shadow: 0 10px 24px -12px rgba(31,77,58,.35); }
 .animate-riseIn { animation: riseIn 0.3s ease-out both; }
 
 /* Respect users who ask for less motion */
